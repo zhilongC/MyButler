@@ -11,7 +11,7 @@
     String siteName = (String)request.getParameter("siteName");
     String siteAccount = (String)request.getParameter("siteAccount");
     String password = (String)request.getParameter("password");
-    String preparedCmd = "insert into website_table(accountNum, siteName, siteAccount, sitePwd) values(?,?,?,?)";
+    String preparedCmd = "insert into website_table(siteName, siteAccount, sitePwd) values(?,?,?)";
     out.println(preparedCmd);
 
     Connection con=null;
@@ -23,10 +23,10 @@
         int i=1;
         con=DriverManager.getConnection(url);
         stmt=con.prepareStatement(preparedCmd);
-        stmt.setString(1, "2");
-        stmt.setString(2, siteName);
-        stmt.setString(3, siteAccount);
-        stmt.setString(4, password);
+        //stmt.setString(1, "2");
+        stmt.setString(1, siteName);
+        stmt.setString(2, siteAccount);
+        stmt.setString(3, password);
         stmt.execute();
         rst.close();
         stmt.close();
