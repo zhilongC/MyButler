@@ -11,10 +11,10 @@ public class WebsiteInfo{
         return siteName;
     }
     public String getSiteAccount(){
-        return siteName;
+        return siteAccount;
     }
     public String getPassword(){
-        return siteName;
+        return password;
     }
     public void setSiteName(String str){
         this.siteName = str;
