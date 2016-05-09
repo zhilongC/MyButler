@@ -10,19 +10,25 @@
 </head>
 <body> 
 <header><h1> Zhilong's website </h1></header>
+
+<form method="post" id="listSite" action="list_site.jsp">
+    <input type="hidden" value="鎻愪氦琛ㄥ崟">
+</form>
+
 <ul id="nav">
-    <li><a href="index.html">首页</a></li>
-    <li><a href="about.html">关于</a></li>
-    <li><a href="media.html">媒体中心</a></li>
-    <li><a href="device.html">设备控制中心</a></li>
-    <li><a href="finance.html">财务中心</a></li>
-    <li><a href="#">密码辅助系统</a>
+    <li><a href="index.html">棣栭〉</a></li>
+    <li><a href="about.html">鍏充簬</a></li>
+    <li><a href="media.html">濯掍綋涓績</a></li>
+    <li><a href="device.html">璁惧鎺у埗涓績</a></li>
+    <li><a href="finance.html">璐㈠姟涓績</a></li>
+    <li><a href="#">瀵嗙爜杈呭姪绯荤粺</a>
         <ul>
-        <li><a href="add.html">添加</a></li>
-        <li><a href="list.html">列表</a></li>
+        <li><a href="add.html">娣诲姞</a></li>
+        <li><a href="#" onclick="document.getElementById('listSite').submit();">鍒楄〃</a></li>
         </ul>
     </li>
 </ul>
+
 
 <script src="js/menu.js"></script>
 </body>
