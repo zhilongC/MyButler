@@ -3,32 +3,35 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>
-    my personal website
+    Zhilong's website
 </title>
 <link href="css/layout.css" rel="stylesheet" type="text/css" />
 <link href="css/menu.css" rel="stylesheet" />
 </head>
 <body> 
-<header><h1> Zhilong's website </h1></header>
 
-<form method="post" id="listSite" action="list_site.jsp">
-    <input type="hidden" value="提交表单">
-</form>
-
+<iframe id = "subFrame" src="media.html" name="subFrame"> </iframe>
 <ul id="nav">
-    <li><a href="index.html">首页</a></li>
-    <li><a href="about.html">关于</a></li>
-    <li><a href="media.html">媒体中心</a></li>
-    <li><a href="device.html">设备控制中心</a></li>
-    <li><a href="finance.html">财务中心</a></li>
+    <li><a href="media.html" target="subFrame">首页</a></li>
+    <li><a href="about.html" target="subFrame">关于</a></li>
+    <li><a href="media.html" target="subFrame">媒体中心</a></li>
+    <li><a href="device.html" target="subFrame">设备控制中心</a></li>
+    <li><a href="finance.html" target="subFrame">财务中心</a></li>
     <li><a href="#">密码辅助系统</a>
         <ul>
-        <li><a href="add.html">添加</a></li>
-        <li><a href="#" onclick="document.getElementById('listSite').submit();">列表</a></li>
+        <li><a href="add.html" target="subFrame">添加</a></li>
+        <li><a href="list_site.jsp" target="subFrame">列表</a></li>
         </ul>
     </li>
 </ul>
 
+<script>
+function func(){
+    //document.getElementById('listFrame').style.display="none";
+    //document.write("<iframe id = "listFrame" src="add.html" name="listFrame">");
+    //document.write("test");
+}
+</script>
 
 <script src="js/menu.js"></script>
 </body>

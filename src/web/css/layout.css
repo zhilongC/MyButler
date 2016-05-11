@@ -44,3 +44,11 @@ header .stuts span {
     font-weight:bold;
     margin-left:5px;
 }
+
+#subFrame {
+    position: absolute;
+    left: 610px;
+    top: 75px;
+    width: 695px;
+    height: 500px;
+}
