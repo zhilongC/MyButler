@@ -7,11 +7,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title> 从数据库查找信息并显示 </title>
+<link href="css/table.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
 <center>
-    <table>
+    <table class=siteListTable>
+    <tr> 
+        <th align=left> 名称 </th>
+        <th align=left> 账号 </th>
+        <th align=left> 密码 </th>
+    </tr>
 <%
     DBManager dbm = new DBManager();
 
