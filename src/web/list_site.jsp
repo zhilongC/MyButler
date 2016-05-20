@@ -12,8 +12,10 @@
 
 <body>
 <center>
+</center>
     <table class=siteListTable>
     <tr> 
+        <th align=left> <input type="checkbox" name="selectAll" /> </th>
         <th align=left> 名称 </th>
         <th align=left> 账号 </th>
         <th align=left> 密码 </th>
@@ -27,15 +29,21 @@
         WebsiteInfo info = (WebsiteInfo)list.get(i);
 %>
     <tr>
+        <td align=left> <input type="checkbox" name="<%=info.getSiteName() %>" /> </td>
         <td> <%=info.getSiteName() %> </td>
         <td> <%=info.getSiteAccount() %> </td>
-        <td> <%=info.getPassword() %> </td>
+        <td> <input type= "button" value = "复制密码" /> </td>
     </tr>
 <%
     }
 %>
     </table>
-</center>
+    <br>
+    <input type="button" value="添加">
+    <input type="button" value="编辑">
+    <input type="button" value="删除">
+    <input type="button" value="导入">
+    <input type="button" value="导出">
 </body>
 
 </html>
