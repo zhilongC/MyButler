@@ -32,11 +32,25 @@
         <td align=left> <input type="checkbox" name="<%=info.getSiteName() %>" /> </td>
         <td> <%=info.getSiteName() %> </td>
         <td> <%=info.getSiteAccount() %> </td>
-        <td> <input type= "button" value = "复制密码" /> </td>
+        <td> <input class="btn" type= "button" data-clipboard-action="copy" data-clipboard-text="<%=info.getPassword() %>" value = "复制密码" /> </td>
     </tr>
 <%
     }
 %>
+<script src="js/clipboard.min.js"></script>
+
+<script>
+var clipboard = new Clipboard('.btn');
+
+clipboard.on('success', function(e) {
+        console.log(e);
+        });
+
+clipboard.on('error', function(e) {
+        console.log(e);
+        });
+</script>
+
     </table>
     <br>
     <input type="button" value="添加">
