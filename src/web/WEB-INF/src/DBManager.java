@@ -8,6 +8,7 @@ public class DBManager{
     private Connection con = null;
     private ResultSet rst = null;
     private Statement stmt = null;
+    private PreparedStatement prestmt=null;
     final static private String url="jdbc:mysql://localhost:3306/db_mysec?user=root&password=123456";
 
     public DBManager(){
@@ -36,5 +37,14 @@ public class DBManager{
         }
 
         return list;
+    }
+    public int insert(String siteName, String siteAccount, String password) throws SQLException{
+        String preparedCmd = "insert into website_table(siteName, siteAccount, sitePwd) values(?,?,?)";
+        prestmt=con.prepareStatement(preparedCmd);
+        prestmt.setString(1, siteName);
+        prestmt.setString(2, siteAccount);
+        prestmt.setString(3, password);
+        prestmt.execute();
+        return 0;
     }
 }
