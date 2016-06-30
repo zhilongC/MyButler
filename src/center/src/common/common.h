@@ -50,6 +50,7 @@ extern "C"
 
 #define BU_VOID void 
 #define BU_BYTE	unsigned char
+#define BU_CHAR	char
 
 #define BU_ERROR   1
 #define BU_OK      0
