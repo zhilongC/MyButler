@@ -3,17 +3,17 @@
 static int s_timerNum;
 static TimerInfo_S* s_pstTimerInfo;			
 
-VOS_UINT32 Timer_init(VOS_UINT32 ulNum)
+BU_UINT32 Timer_init(BU_UINT32 ulNum)
 {
     pthread_t  timerPID;  	
-	VOS_UINT32 ulRet = 0;
-	VOS_UINT32 ulI = 0;
+	BU_UINT32 ulRet = 0;
+	BU_UINT32 ulI = 0;
 
 	s_timerNum = ulNum;
-	s_pstTimerInfo = (TimerInfo_S*)VOS_Malloc(s_timerNum * sizeof(TimerInfo_S));
+	s_pstTimerInfo = (TimerInfo_S*)BU_Malloc(s_timerNum * sizeof(TimerInfo_S));
 	if(NULL == s_pstTimerInfo)
 	{
-		return VOS_ERROR;
+		return BU_ERROR;
 	}
 
 	for(ulI; ulI<s_timerNum; ulI++)
@@ -26,14 +26,14 @@ VOS_UINT32 Timer_init(VOS_UINT32 ulNum)
     if (ulRet)
     {
         Trace(TRACETYPE_ERROR, "[%s][%d]Create pthread error!\r\n", __FUNCTION__, __LINE__);
-        return VOS_ERROR;
+        return BU_ERROR;
     }
-	return VOS_OK;	
+	return BU_OK;	
 }
 
-VOS_UINT32 Timer_start(VOS_UINT32 ulInterval, VOS_UINT32* pHandle, callback_timer_p pCallback)
+BU_UINT32 Timer_start(BU_UINT32 ulInterval, BU_UINT32* pHandle, callback_timer_p pCallback)
 {
-	VOS_UINT32 ulI = 0;
+	BU_UINT32 ulI = 0;
 	
 	/* 查找空闲控制块 */
 	for(ulI; ulI<s_timerNum; ulI++)
@@ -46,7 +46,7 @@ VOS_UINT32 Timer_start(VOS_UINT32 ulInterval, VOS_UINT32* pHandle, callback_time
 	if(ulI == s_timerNum)
 	{
         Trace(TRACETYPE_ERROR, "No timer block\r\n");
-		return VOS_ERROR;
+		return BU_ERROR;
 	}
 
 	/* 记录定时器控制信息 */
@@ -57,10 +57,10 @@ VOS_UINT32 Timer_start(VOS_UINT32 ulInterval, VOS_UINT32* pHandle, callback_time
 	*pHandle = ulI;
 	Trace(TRACETYPE_ERROR, "pHandle[%d]ulInterval[%d]pCallback[0x%x]\r\n", *pHandle, ulInterval, pCallback);
 
-	return VOS_OK;	
+	return BU_OK;	
 }
 
-VOS_UINT32 Timer_stop(VOS_UINT32 ulHandle)
+BU_UINT32 Timer_stop(BU_UINT32 ulHandle)
 {
 	
 	Trace(TRACETYPE_ERROR, "enter\r\n");
@@ -75,28 +75,28 @@ VOS_UINT32 Timer_stop(VOS_UINT32 ulHandle)
 	pthread_mutex_unlock(&(s_pstTimerInfo[ulHandle].mtx));
 
 	Trace(TRACETYPE_ERROR, "end\r\n");	
-	return VOS_OK;	
+	return BU_OK;	
 }
 
-VOS_UINT32 Timer_handle(VOS_UINT32 ulHandle)
+BU_UINT32 Timer_handle(BU_UINT32 ulHandle)
 {
 	s_pstTimerInfo[ulHandle].pCallback(ulHandle);
-	return VOS_OK;	
+	return BU_OK;	
 }
 
-VOS_VOID* Timer_main(VOS_VOID* p)
+BU_VOID* Timer_main(BU_VOID* p)
 {
-	VOS_UINT32 ulI = 0;
-	VOS_UINT32 ulSInv = 0; //时间间隔的秒数 
-	VOS_UINT32 ulMInv = 0; //时间间隔的微秒数
+	BU_UINT32 ulI = 0;
+	BU_UINT32 ulSInv = 0; //时间间隔的秒数 
+	BU_UINT32 ulMInv = 0; //时间间隔的微秒数
 	struct timespec stCurTime;
 	struct timespec stDstTime;
 
-	while(VOS_TRUE)
+	while(BU_TRUE)
 	{
 		ulI = 0;	
 		memset(&stCurTime, 0, sizeof(stCurTime));
-		if(VOS_ERROR == Timer_get_runtime_ns(&stCurTime))
+		if(BU_ERROR == Timer_get_runtime_ns(&stCurTime))
 		{
 			    Trace(TRACETYPE_INFO, "ERROR222222222222222222222222\r\n");
 		}
@@ -130,7 +130,7 @@ VOS_VOID* Timer_main(VOS_VOID* p)
 	return NULL;	
 }
 
-VOS_UINT32 Timer_restart(VOS_UINT32 ulInterval, VOS_UINT32 ulHandle)
+BU_UINT32 Timer_restart(BU_UINT32 ulInterval, BU_UINT32 ulHandle)
 {
 	Trace(TRACETYPE_ERROR, "enter ulInterval[%d]ulHandle[%d]\r\n", ulInterval, ulHandle);
 
@@ -145,10 +145,10 @@ VOS_UINT32 Timer_restart(VOS_UINT32 ulInterval, VOS_UINT32 ulHandle)
 	
 	Trace(TRACETYPE_ERROR, "end\r\n");	
 
-	return VOS_OK;
+	return BU_OK;
 }
 
-VOS_UINT32 Timer_get_runtime_ns(struct timespec* tv)
+BU_UINT32 Timer_get_runtime_ns(struct timespec* tv)
 {
 #if 0
     struct timeval now;
@@ -156,7 +156,7 @@ VOS_UINT32 Timer_get_runtime_ns(struct timespec* tv)
     if(rv) 
     {
     	Trace(TRACETYPE_ERROR, "gettimeofday error\n");
-        return VOS_ERROR;
+        return BU_ERROR;
     }
     tv->tv_sec = now.tv_sec;
     tv->tv_nsec = now.tv_usec * 1000;
@@ -165,16 +165,16 @@ VOS_UINT32 Timer_get_runtime_ns(struct timespec* tv)
     
 	if(0 == clock_gettime(CLOCK_MONOTONIC, tv))
 	{
-		return VOS_OK;
+		return BU_OK;
 	}
 	else
 	{
-		return VOS_ERROR;
+		return BU_ERROR;
 	}
 #endif
 }
 
-VOS_INT32 Timer_cmp_timespec_ns(struct timespec* tv1, struct timespec* tv2)
+BU_INT32 Timer_cmp_timespec_ns(struct timespec* tv1, struct timespec* tv2)
 {
 	if(tv1->tv_sec < tv2->tv_sec)
 	{

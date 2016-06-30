@@ -38,27 +38,32 @@ extern "C"
 
 
 /****************** 常用宏定义*********************************/
-#define VOS_UINT32  unsigned int
-#define VOS_UINT16  unsigned short
-#define VOS_UINT8    char
+#define BU_UINT64  unsigned long
+#define BU_UINT32  unsigned int
+#define BU_UINT16  unsigned short
+#define BU_UINT8   unsigned char
 
-#define VOS_INT32  int
-#define VOS_INT16  short
-#define VOS_INT8  signed char
+#define BU_INT64  long
+#define BU_INT32  int
+#define BU_INT16  short
+#define BU_INT8  signed char
 
-#define VOS_VOID    void
+#define BU_VOID void 
+#define BU_BYTE	unsigned char
 
-#define VOS_BYTE	unsigned char
+#define BU_ERROR   1
+#define BU_OK      0
 
-#define VOS_ERROR   1
-#define VOS_OK      0
-
-#define VOS_TRUE  1
-#define VOS_FALSE 0
+#define BU_TRUE  1
+#define BU_FALSE 0
 
 #define IN
 #define OUT
 #define INOUT
+
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif
 
 #define MEM_DEBUG
 #define MEM_DEBUG_NUM 5000
@@ -80,8 +85,8 @@ extern "C"
 #define Trace(ulTraceType, szFormat...) Trace_fun(ulTraceType, __FUNCTION__, __LINE__, szFormat)
 //#define Trace(ulTraceType, szFormat...) printf(szFormat)
 
-#define VOS_Malloc(ulSize) Com_Malloc(ulSize, __FUNCTION__, __LINE__)
-#define VOS_Free(p) Com_Free(p, __FUNCTION__, __LINE__)
+#define BU_Malloc(ulSize) Com_Malloc(ulSize, __FUNCTION__, __LINE__)
+#define BU_Free(p) Com_Free(p, __FUNCTION__, __LINE__)
 /****************** 常用程序结构*********************************/
 typedef enum TraceType
 {
@@ -93,9 +98,9 @@ typedef enum TraceType
 
 typedef struct _mem_trace_info_t
 {
-	VOS_UINT32 ulAddr;
-	VOS_UINT8 ucFuncName[255];
-	VOS_UINT32 ulLineNum;
+	BU_UINT32 ulAddr;
+	BU_UINT8 ucFuncName[255];
+	BU_UINT32 ulLineNum;
 }mem_trace_info_t;
 
 typedef struct _mem_info_t
@@ -104,7 +109,7 @@ typedef struct _mem_info_t
     mem_trace_info_t info[MEM_DEBUG_NUM];
 }mem_info_t;
 /****************** 外部变量声明*********************************/
-extern VOS_UINT8 g_bTraceLevel ;
+extern BU_UINT8 g_bTraceLevel ;
 
 extern mem_info_t s_traceInfo;
 
@@ -112,20 +117,20 @@ extern mem_info_t s_traceInfo;
 /****************** 常用函数*********************************/
 extern void Trace_fun(int ulTraceType, const char *function, int line, const char* szFormat, ...);
 
-extern VOS_VOID* Com_Malloc(VOS_UINT32 ulSize, const char *function, int line);
-extern VOS_VOID Com_Free(VOS_VOID* p, const char *function, int line);
+extern BU_VOID* Com_Malloc(BU_UINT32 ulSize, const char *function, int line);
+extern BU_VOID Com_Free(BU_VOID* p, const char *function, int line);
 
 /* 位数组操作函数 */
-extern VOS_BYTE *VOS_CreateBitArr(VOS_INT32 bits);
-extern VOS_INT32 VOS_Getbit(VOS_BYTE *set, VOS_INT32 number);
-extern VOS_VOID VOS_Setbit(VOS_BYTE *set, VOS_INT32 number);
-extern VOS_VOID VOS_Unsetbit(VOS_BYTE *set, VOS_INT32 number);
-extern VOS_VOID VOS_Flipbit(VOS_BYTE *set, VOS_INT32 number);
-extern VOS_VOID VOS_DestoryBitArr(VOS_BYTE *set);
+extern BU_BYTE *BU_CreateBitArr(BU_INT32 bits);
+extern BU_INT32 BU_Getbit(BU_BYTE *set, BU_INT32 number);
+extern BU_VOID BU_Setbit(BU_BYTE *set, BU_INT32 number);
+extern BU_VOID BU_Unsetbit(BU_BYTE *set, BU_INT32 number);
+extern BU_VOID BU_Flipbit(BU_BYTE *set, BU_INT32 number);
+extern BU_VOID BU_DestoryBitArr(BU_BYTE *set);
 
 
 /*****************************************************************************
- 函 数 名  : VOS_Base64Encode
+ 函 数 名  : BU_Base64Encode
  功能描述  : BASE64编码
  输入参数  : const char* in  
              int inlen       
@@ -142,12 +147,12 @@ extern VOS_VOID VOS_DestoryBitArr(VOS_BYTE *set);
     修改内容   : 新生成函数
 
 *****************************************************************************/
-extern int VOS_Base64Encode( const char* inputBuffer, int inputCount, char* outputBuffer );
+extern int BU_Base64Encode( const char* inputBuffer, int inputCount, char* outputBuffer );
 
 
 
 /*****************************************************************************
- 函 数 名  : VOS_Base64Decode
+ 函 数 名  : BU_Base64Decode
  功能描述  : BASE64解码
  输入参数  : const char* in  
              int inLen       
@@ -164,11 +169,11 @@ extern int VOS_Base64Encode( const char* inputBuffer, int inputCount, char* outp
     修改内容   : 新生成函数
 
 *****************************************************************************/
-extern int VOS_Base64Decode( const char* inputBuffer, int inputCount, char* outputBuffer );
+extern int BU_Base64Decode( const char* inputBuffer, int inputCount, char* outputBuffer );
 
 
 /*****************************************************************************
- 函 数 名  : VOS_isBigEndian
+ 函 数 名  : BU_isBigEndian
  功能描述  : 判断系统是否为大端字节序
  输入参数  : 无
  输出参数  : 无
@@ -182,7 +187,7 @@ extern int VOS_Base64Decode( const char* inputBuffer, int inputCount, char* outp
     修改内容   : 新生成函数
 
 *****************************************************************************/
-extern VOS_UINT32 VOS_isBigEndian();
+extern BU_UINT32 BU_isBigEndian();
 #ifdef __cplusplus
 }
 #endif

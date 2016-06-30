@@ -20,33 +20,33 @@ static const char DATA_ASCII2BIN[128] = {
     0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,0x30,0x31,0x32,0x33,0xFF,0xFF,0xFF,0xFF,0xFF
 };
 
-VOS_UINT8 g_bTraceLevel;
+BU_UINT8 g_bTraceLevel;
 mem_info_t s_traceInfo;
 
 /* 调试输出接口，暂时用printf打印*/
-//VOS_VOID Trace(int ulTraceType, VOS_const char* szFormat, ...)
-VOS_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* szFormat, ...)
+//BU_VOID Trace(int ulTraceType, BU_const char* szFormat, ...)
+BU_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* szFormat, ...)
 
 {
 #if 1
-	VOS_UINT8 bIsPrint = VOS_TRUE;
-    VOS_UINT8 buf[1024];
-    VOS_UINT32 ulLen;
+	BU_UINT8 bIsPrint = BU_TRUE;
+    BU_UINT8 buf[1024];
+    BU_UINT32 ulLen;
     va_list arglist;
     pthread_mutex_t mut; 
 
 	if(ulTraceType < g_bTraceLevel)
 	{
-		bIsPrint = VOS_FALSE;
+		bIsPrint = BU_FALSE;
 	}
 
-	if(VOS_TRUE == bIsPrint)
+	if(BU_TRUE == bIsPrint)
 	{
-		//buf = (VOS_UINT8*)VOS_Malloc(1024);   malloc here while be memey leak
+		//buf = (BU_UINT8*)BU_Malloc(1024);   malloc here while be memey leak
 	    pthread_mutex_init(&mut,NULL);
 
 	    va_start(arglist,szFormat);
-	    ulLen = vsnprintf(buf, 1024, szFormat,arglist);    
+	    ulLen = vsnprintf((char*)buf, 1024, szFormat,arglist);    
 	    pthread_mutex_lock(&mut);
 	    setbuf(stdout,NULL);      //清空输入缓冲区
         if(ulLen > 0)
@@ -61,7 +61,7 @@ VOS_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* 
 	    va_end(arglist);    
 	    pthread_mutex_destroy(&mut);  
 		
-		//VOS_Free(buf);
+		//BU_Free(buf);
 	}
 	return;
 #endif
@@ -70,11 +70,11 @@ VOS_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* 
 
 
 
-VOS_VOID* Com_Malloc(VOS_UINT32 ulSize, const char *function, int line)
+BU_VOID* Com_Malloc(BU_UINT32 ulSize, const char *function, int line)
 {
 	static int flag = 0;
 	int i = 0;
-	VOS_VOID* p = NULL;
+	BU_VOID* p = NULL;
 
 	if(0 == ulSize)
 	{
@@ -95,7 +95,7 @@ VOS_VOID* Com_Malloc(VOS_UINT32 ulSize, const char *function, int line)
 			memcpy(s_traceInfo.info[i].ucFuncName, function, strlen(function));
 			s_traceInfo.info[i].ulLineNum = line;
 			p = malloc(ulSize);
-			s_traceInfo.info[i].ulAddr = (VOS_UINT32)p;
+			s_traceInfo.info[i].ulAddr = (BU_UINT64)p;
 			break;
 		}
 	}
@@ -113,7 +113,7 @@ VOS_VOID* Com_Malloc(VOS_UINT32 ulSize, const char *function, int line)
 
 
 
-VOS_VOID Com_Free(VOS_VOID* p, const char *function, int line)
+BU_VOID Com_Free(BU_VOID* p, const char *function, int line)
 {
 	int i = 0;
 
@@ -125,7 +125,7 @@ VOS_VOID Com_Free(VOS_VOID* p, const char *function, int line)
     pthread_mutex_lock(&s_traceInfo.mutex);
 	for(; i<MEM_DEBUG_NUM; i++)
 	{
-		if(s_traceInfo.info[i].ulAddr == (VOS_UINT32)p)
+		if(s_traceInfo.info[i].ulAddr == (BU_UINT64)p)
 		{
 			memset(&(s_traceInfo.info[i]), 0, sizeof(mem_trace_info_t));
 			break;
@@ -139,54 +139,54 @@ VOS_VOID Com_Free(VOS_VOID* p, const char *function, int line)
 }
 
 
-static VOS_VOID idx_calc(VOS_INT32 posn, VOS_INT32 *idx, VOS_INT32 *ofs)
+static BU_VOID idx_calc(BU_INT32 posn, BU_INT32 *idx, BU_INT32 *ofs)
 {      
 	*idx = posn / CHAR_BIT;       /* Byte index [0-N] in the array    */      
 	*ofs = posn % CHAR_BIT;       /* Bit number [0-N] within the byte */
 }
-VOS_BYTE *VOS_CreateBitArr(VOS_INT32 bits)
+BU_BYTE *BU_CreateBitArr(BU_INT32 bits)
 {      
 	if(bits == 0)
 	{
 		return NULL;
 	}
-	VOS_BYTE *set = (VOS_BYTE *)calloc((bits + CHAR_BIT - 1) / CHAR_BIT, sizeof(VOS_BYTE));      
+	BU_BYTE *set = (BU_BYTE *)calloc((bits + CHAR_BIT - 1) / CHAR_BIT, sizeof(BU_BYTE));      
 	return set;
 }
-VOS_INT32 VOS_Getbit(VOS_BYTE *set, VOS_INT32 number)
+BU_INT32 BU_Getbit(BU_BYTE *set, BU_INT32 number)
 {      
-	VOS_INT32 idx, ofs;      
+	BU_INT32 idx, ofs;      
 	idx_calc(number, &idx, &ofs);      
 	set += idx;      
 	return (*set & (1 << ofs)) != 0;                      /* 0 or 1   */
 }
-VOS_VOID VOS_Setbit(VOS_BYTE *set, VOS_INT32 number)
+BU_VOID BU_Setbit(BU_BYTE *set, BU_INT32 number)
 {      
-	VOS_INT32 idx, ofs;      
+	BU_INT32 idx, ofs;      
 	idx_calc(number, &idx, &ofs);      
 	set += idx;                
 	*set |= 1 << ofs;                       /* set bit  */  
 	return;
 }
-VOS_VOID VOS_Unsetbit(VOS_BYTE *set, VOS_INT32 number)
+BU_VOID BU_Unsetbit(BU_BYTE *set, BU_INT32 number)
 {      
-	VOS_INT32 idx, ofs;      
+	BU_INT32 idx, ofs;      
 	idx_calc(number, &idx, &ofs);      
 	set += idx;         
 	*set &= ~(1 << ofs);                    /* clear bit*/
 	return;
 }
 
-VOS_VOID VOS_Flipbit(VOS_BYTE *set, VOS_INT32 number)
+BU_VOID BU_Flipbit(BU_BYTE *set, BU_INT32 number)
 {      
-	VOS_INT32 idx, ofs;      
+	BU_INT32 idx, ofs;      
 	idx_calc(number, &idx, &ofs);      
 	set += idx;      
 	*set ^= 1 << ofs;                                     /* flip bit */
 	return;
 }
 
-VOS_VOID VOS_DestoryBitArr(VOS_BYTE *set)
+BU_VOID BU_DestoryBitArr(BU_BYTE *set)
 {
 	if(set != NULL)
 	{
@@ -196,7 +196,7 @@ VOS_VOID VOS_DestoryBitArr(VOS_BYTE *set)
 	return;
 }
 
-int VOS_Base64Encode( const char* inputBuffer, int inputCount, char* outputBuffer )
+int BU_Base64Encode( const char* inputBuffer, int inputCount, char* outputBuffer )
 {
     int i;
     unsigned char b0, b1, b2;
@@ -239,7 +239,7 @@ int VOS_Base64Encode( const char* inputBuffer, int inputCount, char* outputBuffe
     return ((inputCount + 2) / 3) * 4;// 返回有效字符个数
 }
 
-int VOS_Base64Decode( const char* inputBuffer, int inputCount, char* outputBuffer )
+int BU_Base64Decode( const char* inputBuffer, int inputCount, char* outputBuffer )
 {
     int i, j;
     unsigned char b[4];
@@ -354,18 +354,18 @@ int VOS_Base64Decode( const char* inputBuffer, int inputCount, char* outputBuffe
     return (inputCount >> 2) * 3;
 }
 
-VOS_UINT32 VOS_isBigEndian()
+BU_UINT32 BU_isBigEndian()
 {
-    const VOS_UINT16 usTestNum = 0x12ab;
-    const VOS_UINT8* const pLow = (const VOS_UINT8*)&usTestNum;
+    const BU_UINT16 usTestNum = 0x12ab;
+    const BU_UINT8* const pLow = (const BU_UINT8*)&usTestNum;
 
     if(0x12 == *pLow)
 	{
-		return VOS_TRUE;
+		return BU_TRUE;
 	}
 	else
 	{
-		return VOS_FALSE;
+		return BU_FALSE;
 	}
 }
 
