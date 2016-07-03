@@ -6,10 +6,13 @@ extern "C"
 {
 #endif
 
+#include "contrl_common.h"
+
 /******* macro definition ******/
 /******* data structure ******/
 /******* fuction ******/
 extern void* media_main(void* p);
+extern msg_callback_node_t g_msg_media; 
 
 #ifdef __cplusplus
 }

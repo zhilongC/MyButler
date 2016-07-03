@@ -79,12 +79,15 @@ extern "C"
           return (b);\
         }
 
-#define GET_ARRAY_ATTR_NUM(arrName) (sizeof(arrName)/sizeof(arrName[0]))
+#define BU_ARRAY_NUM(arrName) (sizeof(arrName)/sizeof(arrName[0]))
 
 #define COM_MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
 #define Trace(ulTraceType, szFormat...) Trace_fun(ulTraceType, __FUNCTION__, __LINE__, szFormat)
 //#define Trace(ulTraceType, szFormat...) printf(szFormat)
+#define E_LOG(szFormat...) Trace(TRACETYPE_ERROR, szFormat)
+#define I_LOG(szFormat...) Trace(TRACETYPE_INFO, szFormat)
+#define W_LOG(szFormat...) Trace(TRACETYPE_WRITE, szFormat)
 
 #define BU_Malloc(ulSize) Com_Malloc(ulSize, __FUNCTION__, __LINE__)
 #define BU_Free(p) Com_Free(p, __FUNCTION__, __LINE__)
