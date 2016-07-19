@@ -6,7 +6,8 @@ CFLAGS = -w -O2 -g
 export CXXFLAGS=$(CFLAGS)
 export CCFLAGS=$(CFLAGS)
 LDFLAGS=-L../lib3rd/libjson/lib \
-		-lpthread
+		-L../lib3rd/libsocket/lib \
+		-ljson -lsocket -lpthread
 
 CURDIR := $(shell pwd)
 export SUB_OBJPATH = $(CURDIR)/../build/obj
@@ -15,7 +16,8 @@ export SUB_OBJPATH = $(CURDIR)/../build/obj
 TARGET = ../build/bin/center_core 
 
 #所有头文件路径
-export SRC_HEAD_PATH = -I../lib3rd/libjson/include
+export SRC_HEAD_PATH = -I$(CURDIR)/../lib3rd/libjson/include \
+					   -I$(CURDIR)/../lib3rd/libsocket/include 
 
 #各模块文件夹名，如新增模块，此处应添加新增文件夹名
 #MK_DIR = common contrl device finance media

@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-#include "contrl_common.h"
+#include "task.h"
 
 /******* macro definition ******/
 /******* data structure ******/

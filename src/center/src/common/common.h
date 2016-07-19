@@ -192,6 +192,8 @@ extern int BU_Base64Decode( const char* inputBuffer, int inputCount, char* outpu
 
 *****************************************************************************/
 extern BU_UINT32 BU_isBigEndian();
+
+extern BU_VOID* timer_main(BU_VOID* p);
 #ifdef __cplusplus
 }
 #endif
