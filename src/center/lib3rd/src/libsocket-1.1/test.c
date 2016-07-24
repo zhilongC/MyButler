@@ -13,7 +13,7 @@
 #define TCP_S_TEST 	2
 
 // 修改下面的数字，选择你要测试的项目。
-#define TEST 		0
+#define TEST 		1
 
 bool QUIT = false;
 void handle(int sig)
@@ -119,7 +119,12 @@ int main(int argc, char **argv)
 	// 连接指定的服务器
 	if (connectSocket(sp, argv[1], atoi(argv[2])) < 0)
 		return -1;
-
+    sleep(1);
+    char buftmp[1024] = {0};
+    int len = 5;
+    memcpy(buftmp, &len, 4);
+    memcpy(buftmp+4, "hello", 5);
+    writeSocket(sp, buftmp, 9, 0);
 #elif TEST == TCP_S_TEST
 // TCP Server Test
 	

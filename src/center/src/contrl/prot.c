@@ -13,18 +13,59 @@ void handle(int sig)
 static void readCallback(Socket *sp)
 {
 	int n;
-	char buf[1024] = {0};
-	n = readSocket(sp, buf, 1000);
+    int len = 0;
+    int data_len = 0;
+    static char* buf = (char*)calloc(1, 1024);
+    static int buf_len = 1024;
+
+	n = readSocket(sp, &len, 4);
 	
-	if (n == 0)
+	if (n <= 0)
 	{
 		printf("The peer had shutdown\n");
+        closeSocket(sp);
 		return;
 	}
+    else
+    {
+        I_LOG("recv len [%d]\n", len);
+        if(len == 0)
+        {
+            return;
+        }
+        else
+        {
+            data_len = len;
+            if(len > buf_len)
+            {
+                free(buf);
+                buf = (char*)calloc(1, len);
+                buf_len = len;
+            }
+            char* tmp = buf;
+            while(len>0)
+            {
+                n = readSocket(sp, tmp, len);
+                if(n <= 0)
+                {
+                    printf("============================\n");
+                    closeSocket(sp);
+                    break;
+                }
+                else
+                {
+                    len -= n;
+                    tmp = (char*)tmp + n;
+                }
+
+            }
+        }
+    }
 	
-    printf("read from %s:%d\n", inet_ntoa(sp->pAddr.sin_addr), ntohs(sp->pAddr.sin_port));
-    writeSocket(sp, buf, strlen(buf) + 1, 0);
-	printf("%s\n", buf);
+    I_LOG("read from %s:%d\n", inet_ntoa(sp->pAddr.sin_addr), ntohs(sp->pAddr.sin_port));
+    I_LOG("buf[%s]\n", buf);
+
+    msg_list_push(buf, buf_len, PROT_TASK_ID); 
 }
 
 // 当有新的客户连接时，将调用此函数
@@ -56,7 +97,7 @@ void* prot_main(void* p)
     while(1)
     {
         msg_list_handle(&g_msg_prot, prot_msg_cb);
-        msg_list_push("self test", strlen("self test"), PROT_TASK_ID); 
+        //msg_list_push("self test", strlen("self test"), PROT_TASK_ID); 
         sleep(5);
     }
 	libSocketDeinit();
@@ -67,5 +108,6 @@ void* prot_main(void* p)
 void prot_msg_cb(void* msg, BU_UINT32 msg_len)
 {
     I_LOG("%s\n", (char*)msg);
+
     return;
 }

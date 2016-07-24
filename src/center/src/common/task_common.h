@@ -14,8 +14,8 @@ extern "C"
 #define TASK_INFO_NAME_LEN 64
 #define TIMER_TASK_ID   0
 #define CONTRL_TASK_ID  1
-#define MEDIA_TASK_ID   2
-#define PROT_TASK_ID    3
+#define PROT_TASK_ID    2
+#define MEDIA_TASK_ID   3
 /******* data structure ******/
 
 typedef BU_UINT32 task_id;
