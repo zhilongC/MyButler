@@ -76,6 +76,21 @@ static void callbackAccept(Socket *sp)
 	
 }
 
+BU_INT8 send2ctrl(prot_handle_t pHandle, BU_UINT32 type, char* msg, BU_UINT32 msg_len)
+{ 
+    char* sendBuf = (char*)calloc(1, msg_len + sizeof(type) + sizeof(prot_handle_t));
+    if(NULL == sendBuf)
+    {
+        return BU_ERROR;
+    }
+    memcpy(sendBuf, &pHandle, sizeof(prot_handle_t));
+    memcpy(sendBuf+sizeof(prot_handle_t), &type, sizeof(BU_UINT32));
+    memcpy(sendBuf+sizeof(type)+sizeof(prot_handle_t), msg, msg_len);
+    msg_list_push(sendBuf, msg_len+sizeof(type)+sizeof(prot_handle_t), CONTRL_TASK_ID); 
+
+    return BU_OK;
+}
+
 void* prot_main(void* p)
 {
     I_LOG("prot_main start\n");
@@ -107,7 +122,72 @@ void* prot_main(void* p)
 
 void prot_msg_cb(void* msg, BU_UINT32 msg_len)
 {
-    I_LOG("%s\n", (char*)msg);
+    json_object *new_obj = NULL;
+    json_object *my_object = NULL;
 
-    return;
+    const char* temp = NULL;
+    const char* tempSend = NULL;
+    const char* tempName = NULL;
+    int tempMode = 0;
+    int tempNum = 0;
+
+    int i = 0;
+    int subType = 0;
+    int status = 0;
+
+    I_LOG("%s\n", (char*)msg);
+    new_obj = json_tokener_parse((const char*)msg);
+
+    if(strncmp("1.0", json_object_get_string(json_object_object_get(new_obj, "VERSION")), 3) != 0)
+    {
+        return;
+    }
+
+    temp = json_object_get_string(json_object_object_get(new_obj, "TYPE"));
+
+    if(strcmp(temp, "REGISTER") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "LOAD") == 0)
+    {
+    }
+    else if(strcmp(temp, "GET_CONFIG") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "FILE_ADD") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "FILE_LIST") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "FILE_DELETE") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "FILE_DOWNLOAD") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "FILE_COPY") == 0)
+    {
+
+    }
+    else if(strcmp(temp, "FILE_RENAME") == 0)
+    {
+
+    }
+    else
+    {
+
+    }
+    
+    json_object_put(new_obj);
+    json_object_put(my_object);
+
+    return ;
 }
+

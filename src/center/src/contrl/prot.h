@@ -9,6 +9,7 @@ extern "C"
 #include "common.h"
 #include "media_common.h"
 #include "contrl_common.h"
+#include "prot_common.h"
 #include "libsocket.h"
 
 /******* macro definition ******/

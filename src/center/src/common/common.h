@@ -36,7 +36,7 @@ extern "C"
 #include <wait.h>
 #include <math.h>
 
-
+#include "json/json.h"
 /****************** 常用宏定义*********************************/
 #define BU_UINT64  unsigned long
 #define BU_UINT32  unsigned int
