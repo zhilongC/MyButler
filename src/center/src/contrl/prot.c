@@ -1,5 +1,31 @@
 #include "prot.h"
 
+static prot_session_info_t s_sess_info[MAX_SESSION_NUM];
+
+prot_handle_t create_session(void* sock, const char* acc, const char* pwd)
+{
+    int i = 0;
+    int empty_flag = MAX_SESSION_NUM;
+    if(acc == NULL || pwd == NULL){
+        return BU_ERROR;
+    }
+    for(i=0; i<MAX_SESSION_NUM; i++){
+        
+        if(strcmp(s_sess_info[i].account, acc)==0){
+           break; 
+        } else if(s_sess_info[i].account == NULL){
+           empty_flag = i; 
+        } else {
+        }
+    }
+    if(i == MAX_SESSION_NUM && empty_flag != MAX_SESSION_NUM)
+    {
+        s_sess_info[empty_flag].account = strdup(acc);
+        s_sess_info[empty_flag].sock = sock;
+
+    }
+}
+
 msg_callback_node_t g_msg_prot; 
 
 bool QUIT = false;
@@ -39,10 +65,10 @@ static void readCallback(Socket *sp)
             if(len > buf_len)
             {
                 free(buf);
-                buf = (char*)calloc(1, len);
-                buf_len = len;
+                buf = (char*)calloc(1, len+sizeof(void*));
+                buf_len = len+sizeof(void*);
             }
-            char* tmp = buf;
+            char* tmp = buf + sizeof(void*);
             while(len>0)
             {
                 n = readSocket(sp, tmp, len);
@@ -63,8 +89,9 @@ static void readCallback(Socket *sp)
     }
 	
     I_LOG("read from %s:%d\n", inet_ntoa(sp->pAddr.sin_addr), ntohs(sp->pAddr.sin_port));
-    I_LOG("buf[%s]\n", buf);
+    I_LOG("buf[%s]\n", buf+sizeof(void*));
 
+    memcpy(buf, &sp, sizeof(void*));
     msg_list_push(buf, buf_len, PROT_TASK_ID); 
 }
 
@@ -130,13 +157,16 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     const char* tempName = NULL;
     int tempMode = 0;
     int tempNum = 0;
+    void* sock = NULL;
 
     int i = 0;
     int subType = 0;
     int status = 0;
 
     I_LOG("%s\n", (char*)msg);
-    new_obj = json_tokener_parse((const char*)msg);
+    memcpy(&sock, msg, sizeof(void*));
+
+    new_obj = json_tokener_parse((const char*)msg+sizeof(void*));
 
     if(strncmp("1.0", json_object_get_string(json_object_object_get(new_obj, "VERSION")), 3) != 0)
     {
@@ -151,6 +181,9 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     }
     else if(strcmp(temp, "LOAD") == 0)
     {
+       create_session(sock, 
+               json_object_get_string(json_object_object_get(new_obj, "ACCOUNT")),
+               json_object_get_string(json_object_object_get(new_obj, "PWD")));
     }
     else if(strcmp(temp, "GET_CONFIG") == 0)
     {

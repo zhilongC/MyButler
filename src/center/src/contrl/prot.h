@@ -13,7 +13,13 @@ extern "C"
 #include "libsocket.h"
 
 /******* macro definition ******/
+#define MAX_SESSION_NUM 10
 /******* data structure ******/
+typedef struct tag_prot_session_info{
+    prot_handle_t handle;
+    void* sock;
+    char* account;
+}prot_session_info_t;
 
 /******* fuction ******/
 void* prot_main(void* p);
