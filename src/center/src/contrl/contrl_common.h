@@ -7,6 +7,7 @@ extern "C"
 #endif
 /******* macro definition ******/
 /******* data structure ******/
+typedef int contrl_handle_t;
 
 /******* fuction ******/
 

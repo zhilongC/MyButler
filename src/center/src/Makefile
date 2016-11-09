@@ -7,13 +7,14 @@ export CXXFLAGS=$(CFLAGS)
 export CCFLAGS=$(CFLAGS)
 LDFLAGS=-L../lib3rd/libjson/lib \
 		-L../lib3rd/libsocket/lib \
-		-ljson -lsocket -lpthread
+		-ljson -lsocket -lpthread -lrt
 
 CURDIR := $(shell pwd)
 export SUB_OBJPATH = $(CURDIR)/../build/obj
 
 #最终生成的目标文件
-TARGET = ../build/bin/center_core 
+TARGET_PATH = ../build/bin
+TARGET = $(TARGET_PATH)/center_core 
 
 #所有头文件路径
 export SRC_HEAD_PATH = -I$(CURDIR)/../lib3rd/libjson/include \
@@ -33,6 +34,8 @@ all: sub link
 
 .PHONY : sub
 sub:
+	mkdir -p $(SUB_OBJPATH);
+	mkdir -p $(TARGET_PATH);
 	@for mkf in $(SRC_PATH);\
 		do { cd $$mkf && $(MAKE);}\
 		||exit "$$?";\

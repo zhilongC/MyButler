@@ -4,36 +4,27 @@ static prot_session_info_t s_sess_info[MAX_SESSION_NUM];
 msg_callback_node_t g_msg_prot; 
 bool QUIT = false;
 
-prot_handle_t create_session(void* sock, const char* acc, const char* pwd)
+static prot_handle_t create_session(void* sock, int ver, const char* acc, const char* pwd)
 {
     int i = 0;
-    int empty_flag = MAX_SESSION_NUM;
     
     if(acc == NULL || pwd == NULL){
 
-        return MAX_SESSION_NUM;
+        return -1;
     }
     
     for(i=0; i<MAX_SESSION_NUM; i++){
-        
-        if(strcmp(s_sess_info[i].account, acc)==0){
-        
-           break; 
-        } else if(s_sess_info[i].account == NULL){
-
-           empty_flag = i; 
-        } else {
-        
+        if(s_sess_info[i].account == NULL){
+            
+            s_sess_info[i].account = strdup(acc);
+            s_sess_info[i].pwd = strdup(pwd);
+            s_sess_info[i].sock = sock;
+            s_sess_info[i].ver = ver;
+            return i;
         }
     }
-    if(i == MAX_SESSION_NUM && empty_flag != MAX_SESSION_NUM)
-    {
-        s_sess_info[empty_flag].account = strdup(acc);
-        s_sess_info[empty_flag].sock = sock;
 
-    }
-
-    return empty_flag;
+    return -1;
 }
 
 
@@ -126,6 +117,35 @@ BU_INT8 send2ctrl(prot_handle_t pHandle, BU_UINT32 type, char* msg, BU_UINT32 ms
     return BU_OK;
 }
 
+BU_INT8 check_prot_handle(prot_handle_t pHandle)
+{
+    if(pHandle < 0 || pHandle >= MAX_SESSION_NUM){
+
+        return BU_FALSE;
+    } else {
+
+        return BU_TRUE;
+    }
+}
+
+BU_INT8 notifi_load(prot_handle_t pHandle)
+{ 
+    pkt_mhead_t mhead;
+
+    if(!check_prot_handle(pHandle)){
+
+        return BU_ERROR;
+    }
+
+    mhead.prot_handle = pHandle;
+    mhead.type = PKG_PROT_MEDIA_LOAD;
+
+    msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), MEDIA_TASK_ID); 
+    //msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), CONTRL_TASK_ID); 
+    
+    return BU_OK;
+}
+
 void* prot_main(void* p)
 {
     I_LOG("prot_main start\n");
@@ -155,18 +175,50 @@ void* prot_main(void* p)
     return NULL;
 }
 
+void load_msg_proc(void* sock, json_object* msg_obj)
+{
+    json_object *my_object = json_object_new_object ();
+    prot_handle_t tmp_handle = -1;
+    int code = BU_OK;
+    const char* tempSend = NULL;
+
+    tmp_handle = create_session(sock, 
+       json_object_get_int(json_object_object_get(msg_obj, "VER")),
+       json_object_get_string(json_object_object_get(msg_obj, "ACCOUNT")),
+       json_object_get_string(json_object_object_get(msg_obj, "PWD")));
+    if(check_prot_handle(tmp_handle)){
+
+        notifi_load(tmp_handle);
+    } else {
+    
+        code = BU_ERROR;
+    }
+    
+    json_object_object_add (my_object, "DID", json_object_new_int (tmp_handle));
+    json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_LOAD));
+    json_object_object_add (my_object, "CODE", json_object_new_int (code));
+
+    tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+    if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+    
+        writeSocket((Socket*)sock, (void*)tempSend, strlen(tempSend), 0);
+    }
+
+    return;
+}
+
 void prot_msg_cb(void* msg, BU_UINT32 msg_len)
 {
     json_object *new_obj = NULL;
     json_object *my_object = NULL;
-
+    json_tokener *tok = NULL;
     const char* temp = NULL;
     const char* tempSend = NULL;
     const char* tempName = NULL;
     int tempMode = 0;
     int tempNum = 0;
     void* sock = NULL;
-
+    int msg_type = 0;
     int i = 0;
     int subType = 0;
     int status = 0;
@@ -174,56 +226,40 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     I_LOG("%s\n", (char*)msg);
     memcpy(&sock, msg, sizeof(void*));
 
-    new_obj = json_tokener_parse((const char*)msg+sizeof(void*));
-
-    if(strncmp("1.0", json_object_get_string(json_object_object_get(new_obj, "VERSION")), 3) != 0)
-    {
+    tok = json_tokener_new ();
+    new_obj = json_tokener_parse_ex (tok, (const char*)msg+sizeof(void*), msg_len-sizeof(void*));
+    if (NULL == new_obj) {
+        E_LOG("json parse wrong, illicit msg\n");
         return;
     }
 
-    temp = json_object_get_string(json_object_object_get(new_obj, "TYPE"));
+    msg_type = json_object_get_int(json_object_object_get(new_obj, "TYPE"));
 
-    if(strcmp(temp, "REGISTER") == 0)
+    switch ( msg_type )
     {
-
-    }
-    else if(strcmp(temp, "LOAD") == 0)
-    {
-       create_session(sock, 
-               json_object_get_string(json_object_object_get(new_obj, "ACCOUNT")),
-               json_object_get_string(json_object_object_get(new_obj, "PWD")));
-    }
-    else if(strcmp(temp, "GET_CONFIG") == 0)
-    {
-
-    }
-    else if(strcmp(temp, "FILE_ADD") == 0)
-    {
-
-    }
-    else if(strcmp(temp, "FILE_LIST") == 0)
-    {
-
-    }
-    else if(strcmp(temp, "FILE_DELETE") == 0)
-    {
-
-    }
-    else if(strcmp(temp, "FILE_DOWNLOAD") == 0)
-    {
-
-    }
-    else if(strcmp(temp, "FILE_COPY") == 0)
-    {
-
-    }
-    else if(strcmp(temp, "FILE_RENAME") == 0)
-    {
-
-    }
-    else
-    {
-
+        case PROT_TYPE_REG :
+            
+            break;
+        case PROT_TYPE_LOAD :
+            load_msg_proc(sock, new_obj);
+            break;
+        case PROT_TYPE_GET_CONFIG :
+            break;
+        case PROT_TYPE_FILE_ADD :
+            break;
+        case PROT_TYPE_FILE_LIST :
+            break;
+        case PROT_TYPE_FILE_DELETE :
+            break;
+        case PROT_TYPE_FILE_DOWNLOAD :
+            break;
+        case PROT_TYPE_FILE_COPY :
+            break;
+        case PROT_TYPE_FILE_RENAME :
+            break;
+        default:
+            E_LOG("wrong msg type\n");
+            break;
     }
     
     json_object_put(new_obj);

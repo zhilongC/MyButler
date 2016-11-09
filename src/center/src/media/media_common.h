@@ -10,6 +10,8 @@ extern "C"
 
 /******* macro definition ******/
 /******* data structure ******/
+typedef int media_handle_t;
+
 /******* fuction ******/
 extern void* media_main(void* p);
 extern msg_callback_node_t g_msg_media; 

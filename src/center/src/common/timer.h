@@ -6,6 +6,7 @@ extern "C"
 { 
 #endif
 
+#include <time.h>
 #include "common.h"
 #include "task_common.h"
 

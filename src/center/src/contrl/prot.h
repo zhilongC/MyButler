@@ -11,6 +11,7 @@ extern "C"
 #include "contrl_common.h"
 #include "prot_common.h"
 #include "libsocket.h"
+#include "com_pkg_struct.h"
 
 /******* macro definition ******/
 #define MAX_SESSION_NUM 10
@@ -18,8 +19,10 @@ extern "C"
 typedef struct tag_prot_session_info{
     media_handle_t mhandle;
     contrl_handle_t chandle;
+    BU_INT8 ver;
     void* sock;
     char* account;
+    char* pwd;
 }prot_session_info_t;
 
 /******* fuction ******/

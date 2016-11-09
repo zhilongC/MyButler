@@ -16,6 +16,9 @@ extern "C"
 #define CONTRL_TASK_ID  1
 #define PROT_TASK_ID    2
 #define MEDIA_TASK_ID   3
+
+#define MAX_SESSION_NUM 10
+
 /******* data structure ******/
 
 typedef BU_UINT32 task_id;
