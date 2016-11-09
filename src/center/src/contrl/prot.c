@@ -1,21 +1,29 @@
 #include "prot.h"
 
 static prot_session_info_t s_sess_info[MAX_SESSION_NUM];
+msg_callback_node_t g_msg_prot; 
+bool QUIT = false;
 
 prot_handle_t create_session(void* sock, const char* acc, const char* pwd)
 {
     int i = 0;
     int empty_flag = MAX_SESSION_NUM;
+    
     if(acc == NULL || pwd == NULL){
-        return BU_ERROR;
+
+        return MAX_SESSION_NUM;
     }
+    
     for(i=0; i<MAX_SESSION_NUM; i++){
         
         if(strcmp(s_sess_info[i].account, acc)==0){
+        
            break; 
         } else if(s_sess_info[i].account == NULL){
+
            empty_flag = i; 
         } else {
+        
         }
     }
     if(i == MAX_SESSION_NUM && empty_flag != MAX_SESSION_NUM)
@@ -24,11 +32,11 @@ prot_handle_t create_session(void* sock, const char* acc, const char* pwd)
         s_sess_info[empty_flag].sock = sock;
 
     }
+
+    return empty_flag;
 }
 
-msg_callback_node_t g_msg_prot; 
 
-bool QUIT = false;
 void handle(int sig)
 {   
     if (sig == SIGINT)

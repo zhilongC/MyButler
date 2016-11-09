@@ -11,6 +11,8 @@ extern "C"
 /******* macro definition ******/
 /******* data structure ******/
 typedef int prot_handle_t;
+typedef int media_handle_t;
+typedef int contrl_handle_t;
 
 typedef enum enum_msg_type{
     PROT_REG            = 0x001,

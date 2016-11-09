@@ -16,7 +16,8 @@ extern "C"
 #define MAX_SESSION_NUM 10
 /******* data structure ******/
 typedef struct tag_prot_session_info{
-    prot_handle_t handle;
+    media_handle_t mhandle;
+    contrl_handle_t chandle;
     void* sock;
     char* account;
 }prot_session_info_t;
