@@ -17,12 +17,12 @@ typedef void (*callback_timer_p)(BU_UINT32);
 /*定时器描述信息*/
 typedef struct TimerInfo
 {
-	BU_UINT32 ulHandle;	
-	BU_UINT32 ulInterval;                //定时间隔，单位毫秒
-	BU_UINT32 ulRecvTaskID;              //处理定时任务的任务ID
-	BU_UINT64 tmp_data;                  //存储用户处理定时任务时要用的数据
-	struct timespec stStartTime;         //记录每次定时的开始时间
-	pthread_mutex_t mtx;
+    BU_UINT32 ulHandle;    
+    BU_UINT32 ulInterval;                //定时间隔，单位毫秒
+    BU_UINT32 ulRecvTaskID;              //处理定时任务的任务ID
+    BU_UINT64 tmp_data;                  //存储用户处理定时任务时要用的数据
+    struct timespec stStartTime;         //记录每次定时的开始时间
+    pthread_mutex_t mtx;
 }TimerInfo_S;
 
 BU_UINT32 Timer_init(BU_UINT32 ulNum);

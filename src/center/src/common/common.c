@@ -29,26 +29,26 @@ BU_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* s
 
 {
 #if 1
-	BU_UINT8 bIsPrint = BU_TRUE;
+    BU_UINT8 bIsPrint = BU_TRUE;
     BU_UINT8 buf[1024];
     BU_UINT32 ulLen;
     va_list arglist;
     pthread_mutex_t mut; 
 
-	if(ulTraceType < g_bTraceLevel)
-	{
-		bIsPrint = BU_FALSE;
-	}
+    if(ulTraceType < g_bTraceLevel)
+    {
+        bIsPrint = BU_FALSE;
+    }
 
-	if(BU_TRUE == bIsPrint)
-	{
-		//buf = (BU_UINT8*)BU_Malloc(1024);   malloc here while be memey leak
-	    pthread_mutex_init(&mut,NULL);
+    if(BU_TRUE == bIsPrint)
+    {
+        //buf = (BU_UINT8*)BU_Malloc(1024);   malloc here while be memey leak
+        pthread_mutex_init(&mut,NULL);
 
-	    va_start(arglist,szFormat);
-	    ulLen = vsnprintf((char*)buf, 1024, szFormat,arglist);    
-	    pthread_mutex_lock(&mut);
-	    setbuf(stdout,NULL);      //清空输入缓冲区
+        va_start(arglist,szFormat);
+        ulLen = vsnprintf((char*)buf, 1024, szFormat,arglist);    
+        pthread_mutex_lock(&mut);
+        setbuf(stdout,NULL);      //清空输入缓冲区
         if(ulLen > 0)
         {
             printf("[%s][%d][%d]:%s", function, line, ulTraceType, buf);    
@@ -57,13 +57,13 @@ BU_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* s
         {
             printf("print error!\r\n");
         } 
-	    pthread_mutex_unlock(&mut);
-	    va_end(arglist);    
-	    pthread_mutex_destroy(&mut);  
-		
-		//BU_Free(buf);
-	}
-	return;
+        pthread_mutex_unlock(&mut);
+        va_end(arglist);    
+        pthread_mutex_destroy(&mut);  
+        
+        //BU_Free(buf);
+    }
+    return;
 #endif
 }
 
@@ -72,42 +72,42 @@ BU_VOID Trace_fun(int ulTraceType, const char *function, int line, const char* s
 
 BU_VOID* Com_Malloc(BU_UINT32 ulSize, const char *function, int line)
 {
-	static int flag = 0;
-	int i = 0;
-	BU_VOID* p = NULL;
+    static int flag = 0;
+    int i = 0;
+    BU_VOID* p = NULL;
 
-	if(0 == ulSize)
-	{
-		return NULL;
-	}
-#ifdef MEM_DEBUG	
-	if(flag == 0)
-	{
-		memset(&s_traceInfo, 0, sizeof(mem_info_t));
-	    pthread_mutex_init(&s_traceInfo.mutex,NULL);
-		flag = 1;
-	}
+    if(0 == ulSize)
+    {
+        return NULL;
+    }
+#ifdef MEM_DEBUG    
+    if(flag == 0)
+    {
+        memset(&s_traceInfo, 0, sizeof(mem_info_t));
+        pthread_mutex_init(&s_traceInfo.mutex,NULL);
+        flag = 1;
+    }
     pthread_mutex_lock(&s_traceInfo.mutex);
-	for(; i<MEM_DEBUG_NUM; i++)
-	{
-		if(s_traceInfo.info[i].ulAddr == 0)
-		{
-			memcpy(s_traceInfo.info[i].ucFuncName, function, strlen(function));
-			s_traceInfo.info[i].ulLineNum = line;
-			p = malloc(ulSize);
-			s_traceInfo.info[i].ulAddr = (BU_UINT64)p;
-			break;
-		}
-	}
+    for(; i<MEM_DEBUG_NUM; i++)
+    {
+        if(s_traceInfo.info[i].ulAddr == 0)
+        {
+            memcpy(s_traceInfo.info[i].ucFuncName, function, strlen(function));
+            s_traceInfo.info[i].ulLineNum = line;
+            p = malloc(ulSize);
+            s_traceInfo.info[i].ulAddr = (BU_UINT64)p;
+            break;
+        }
+    }
     pthread_mutex_unlock(&s_traceInfo.mutex);
-	if(i == MEM_DEBUG_NUM)
-	{
-		printf("[%s][%d]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n", __FUNCTION__, __LINE__);
-	}
+    if(i == MEM_DEBUG_NUM)
+    {
+        printf("[%s][%d]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n", __FUNCTION__, __LINE__);
+    }
 #else
-	p = malloc(ulSize);
+    p = malloc(ulSize);
 #endif
-	return p;
+    return p;
 }
 
 
@@ -115,85 +115,85 @@ BU_VOID* Com_Malloc(BU_UINT32 ulSize, const char *function, int line)
 
 BU_VOID Com_Free(BU_VOID* p, const char *function, int line)
 {
-	int i = 0;
+    int i = 0;
 
-	if(NULL == p)
-	{
-		return;
-	}
+    if(NULL == p)
+    {
+        return;
+    }
 #ifdef MEM_DEBUG
     pthread_mutex_lock(&s_traceInfo.mutex);
-	for(; i<MEM_DEBUG_NUM; i++)
-	{
-		if(s_traceInfo.info[i].ulAddr == (BU_UINT64)p)
-		{
-			memset(&(s_traceInfo.info[i]), 0, sizeof(mem_trace_info_t));
-			break;
-		}
-	}
+    for(; i<MEM_DEBUG_NUM; i++)
+    {
+        if(s_traceInfo.info[i].ulAddr == (BU_UINT64)p)
+        {
+            memset(&(s_traceInfo.info[i]), 0, sizeof(mem_trace_info_t));
+            break;
+        }
+    }
     pthread_mutex_unlock(&s_traceInfo.mutex);
 #else 
-	free(p);
+    free(p);
 #endif
-	return;
+    return;
 }
 
 
 static BU_VOID idx_calc(BU_INT32 posn, BU_INT32 *idx, BU_INT32 *ofs)
 {      
-	*idx = posn / CHAR_BIT;       /* Byte index [0-N] in the array    */      
-	*ofs = posn % CHAR_BIT;       /* Bit number [0-N] within the byte */
+    *idx = posn / CHAR_BIT;       /* Byte index [0-N] in the array    */      
+    *ofs = posn % CHAR_BIT;       /* Bit number [0-N] within the byte */
 }
 BU_BYTE *BU_CreateBitArr(BU_INT32 bits)
 {      
-	if(bits == 0)
-	{
-		return NULL;
-	}
-	BU_BYTE *set = (BU_BYTE *)calloc((bits + CHAR_BIT - 1) / CHAR_BIT, sizeof(BU_BYTE));      
-	return set;
+    if(bits == 0)
+    {
+        return NULL;
+    }
+    BU_BYTE *set = (BU_BYTE *)calloc((bits + CHAR_BIT - 1) / CHAR_BIT, sizeof(BU_BYTE));      
+    return set;
 }
 BU_INT32 BU_Getbit(BU_BYTE *set, BU_INT32 number)
 {      
-	BU_INT32 idx, ofs;      
-	idx_calc(number, &idx, &ofs);      
-	set += idx;      
-	return (*set & (1 << ofs)) != 0;                      /* 0 or 1   */
+    BU_INT32 idx, ofs;      
+    idx_calc(number, &idx, &ofs);      
+    set += idx;      
+    return (*set & (1 << ofs)) != 0;                      /* 0 or 1   */
 }
 BU_VOID BU_Setbit(BU_BYTE *set, BU_INT32 number)
 {      
-	BU_INT32 idx, ofs;      
-	idx_calc(number, &idx, &ofs);      
-	set += idx;                
-	*set |= 1 << ofs;                       /* set bit  */  
-	return;
+    BU_INT32 idx, ofs;      
+    idx_calc(number, &idx, &ofs);      
+    set += idx;                
+    *set |= 1 << ofs;                       /* set bit  */  
+    return;
 }
 BU_VOID BU_Unsetbit(BU_BYTE *set, BU_INT32 number)
 {      
-	BU_INT32 idx, ofs;      
-	idx_calc(number, &idx, &ofs);      
-	set += idx;         
-	*set &= ~(1 << ofs);                    /* clear bit*/
-	return;
+    BU_INT32 idx, ofs;      
+    idx_calc(number, &idx, &ofs);      
+    set += idx;         
+    *set &= ~(1 << ofs);                    /* clear bit*/
+    return;
 }
 
 BU_VOID BU_Flipbit(BU_BYTE *set, BU_INT32 number)
 {      
-	BU_INT32 idx, ofs;      
-	idx_calc(number, &idx, &ofs);      
-	set += idx;      
-	*set ^= 1 << ofs;                                     /* flip bit */
-	return;
+    BU_INT32 idx, ofs;      
+    idx_calc(number, &idx, &ofs);      
+    set += idx;      
+    *set ^= 1 << ofs;                                     /* flip bit */
+    return;
 }
 
 BU_VOID BU_DestoryBitArr(BU_BYTE *set)
 {
-	if(set != NULL)
-	{
-		free(set);
-	}
+    if(set != NULL)
+    {
+        free(set);
+    }
 
-	return;
+    return;
 }
 
 int BU_Base64Encode( const char* inputBuffer, int inputCount, char* outputBuffer )
@@ -360,12 +360,12 @@ BU_UINT32 BU_isBigEndian()
     const BU_UINT8* const pLow = (const BU_UINT8*)&usTestNum;
 
     if(0x12 == *pLow)
-	{
-		return BU_TRUE;
-	}
-	else
-	{
-		return BU_FALSE;
-	}
+    {
+        return BU_TRUE;
+    }
+    else
+    {
+        return BU_FALSE;
+    }
 }
 

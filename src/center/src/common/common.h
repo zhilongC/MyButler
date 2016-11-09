@@ -49,8 +49,8 @@ extern "C"
 #define BU_INT8  signed char
 
 #define BU_VOID void 
-#define BU_BYTE	unsigned char
-#define BU_CHAR	char
+#define BU_BYTE    unsigned char
+#define BU_CHAR    char
 
 #define BU_ERROR   1
 #define BU_OK      0
@@ -94,17 +94,17 @@ extern "C"
 /****************** 常用程序结构*********************************/
 typedef enum TraceType
 {
-	TRACETYPE_INFO,
-	TRACETYPE_WARN,
-	TRACETYPE_ERROR,
+    TRACETYPE_INFO,
+    TRACETYPE_WARN,
+    TRACETYPE_ERROR,
 
 }TraceType_E;
 
 typedef struct _mem_trace_info_t
 {
-	BU_UINT32 ulAddr;
-	BU_UINT8 ucFuncName[255];
-	BU_UINT32 ulLineNum;
+    BU_UINT32 ulAddr;
+    BU_UINT8 ucFuncName[255];
+    BU_UINT32 ulLineNum;
 }mem_trace_info_t;
 
 typedef struct _mem_info_t
