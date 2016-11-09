@@ -123,8 +123,10 @@ int main(int argc, char **argv)
     char buftmp[1024] = {0};
     int len = 5;
     memcpy(buftmp, &len, 4);
-    memcpy(buftmp+4, "hello", 5);
-    writeSocket(sp, buftmp, 9, 0);
+    memcpy(buftmp+4, "{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}", strlen("{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}"));
+    //memcpy(buftmp+4, "hello", 5);
+    printf("%s\n", buftmp+4);
+    writeSocket(sp, buftmp, strlen("{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}")+4, 0);
 #elif TEST == TCP_S_TEST
 // TCP Server Test
 	
