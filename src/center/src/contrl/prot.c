@@ -34,6 +34,14 @@ void handle(int sig)
         QUIT = true;
 }
 
+prot_session_info_t* find_session_info(prot_handle_t phandle){
+    if(check_prot_handle(phandle)){
+
+        return (prot_session_info_t*)&s_sess_info[phandle];
+    }
+
+    return NULL;
+}
 static void readCallback(Socket *sp)
 {
     int n;
@@ -92,7 +100,7 @@ static void readCallback(Socket *sp)
     I_LOG("buf[%s]\n", buf+sizeof(void*));
 
     memcpy(buf, &sp, sizeof(void*));
-    msg_list_push(buf, buf_len, PROT_TASK_ID); 
+    msg_list_push(buf, buf_len, PROT_TASK_ID, PROT_NET_TASK_ID); 
 }
 
 static void callbackAccept(Socket *sp)
@@ -112,7 +120,7 @@ BU_INT8 send2ctrl(prot_handle_t pHandle, BU_UINT32 type, char* msg, BU_UINT32 ms
     memcpy(sendBuf, &pHandle, sizeof(prot_handle_t));
     memcpy(sendBuf+sizeof(prot_handle_t), &type, sizeof(BU_UINT32));
     memcpy(sendBuf+sizeof(type)+sizeof(prot_handle_t), msg, msg_len);
-    msg_list_push(sendBuf, msg_len+sizeof(type)+sizeof(prot_handle_t), CONTRL_TASK_ID); 
+    msg_list_push(sendBuf, msg_len+sizeof(type)+sizeof(prot_handle_t), CONTRL_TASK_ID, PROT_TASK_ID); 
 
     return BU_OK;
 }
@@ -140,7 +148,7 @@ BU_INT8 notifi_load(prot_handle_t pHandle)
     mhead.prot_handle = pHandle;
     mhead.type = PKG_PROT_MEDIA_LOAD;
 
-    msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), MEDIA_TASK_ID); 
+    msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), MEDIA_TASK_ID, PROT_TASK_ID); 
     //msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), CONTRL_TASK_ID); 
     
     return BU_OK;
@@ -197,7 +205,7 @@ BU_INT8 send_json_str(void* sock, const char* sendbuf, int buf_len)
     return BU_OK;
 }
 
-void load_msg_proc(void* sock, json_object* msg_obj)
+BU_INT8 load_msg_proc(void* sock, json_object* msg_obj)
 {
     json_object *my_object = json_object_new_object ();
     prot_handle_t tmp_handle = -1;
@@ -225,10 +233,73 @@ void load_msg_proc(void* sock, json_object* msg_obj)
         send_json_str(sock, tempSend, strlen(tempSend));
     }
 
-    return;
+    return BU_OK;
 }
 
-void prot_msg_cb(void* msg, BU_UINT32 msg_len)
+BU_INT8 file_list_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
+{ 
+    char* sendBuf = NULL;
+    const char* path = NULL;
+    int pathLen = 0;
+    int offset = 0;
+    pkt_mhead_t mhead;
+    prot_session_info_t* psInfo = NULL;
+
+    psInfo = find_session_info(pHandle);
+    mhead.prot_handle = pHandle;
+    mhead.media_handle = psInfo->mhandle;
+    mhead.type = PKG_PROT_MEDIA_FLIST;
+
+    if((path = json_object_get_string(json_object_object_get(msg_obj, "FILE_PATH"))) == NULL){
+        E_LOG("FILE_PATH is empty\n");
+        return BU_ERROR;
+    }
+    pathLen = strlen(path);
+    /* ****************pkg prot PKG_PROT_MEDIA_FLIST************** 
+        +4B: pathLen
+        +NB: path string with length pathLen
+    ************************************************************* */
+    PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ pathLen + 4);
+    PKG_STRING_MSG(sendBuf, offset, &mhead, sizeof(pkt_mhead_t));
+    PKG_UINT32_MSG(sendBuf,offset, pathLen);
+    PKG_STRING_MSG(sendBuf, offset, path, pathLen);
+    
+    msg_list_push(sendBuf, offset, MEDIA_TASK_ID, PROT_TASK_ID); 
+    //msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), CONTRL_TASK_ID); 
+    
+    return BU_OK;
+}
+
+static BU_INT8 media_msg_proc(void* msg, BU_UINT32 msg_len)
+{
+    pkt_mhead_t mhead;
+    prot_session_info_t* psInfo = NULL;
+    if(msg_len < sizeof(pkt_mhead_t) || msg == NULL){
+        E_LOG("error input\n");
+        return BU_ERROR;
+    }
+
+    memcpy(&mhead, msg, sizeof(pkt_mhead_t)); 
+    I_LOG("media msg type [%d]\n", mhead.type);
+
+    switch ( mhead.type )
+    {
+        case PKG_PROT_MEDIA_LOAD :
+            psInfo = find_session_info(mhead.prot_handle);
+            if(NULL != psInfo){
+                psInfo->mhandle = mhead.media_handle;
+            }
+            break;
+        case PKG_PROT_MEDIA_FLIST :
+            break;
+        default:
+            E_LOG("wrong media msg type\n");
+            return BU_ERROR;
+    }
+        
+    return BU_OK;
+}
+static BU_INT8 net_msg_proc(void* msg, BU_UINT32 msg_len)
 {
     json_object *new_obj = NULL;
     json_object *my_object = NULL;
@@ -243,6 +314,7 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     int i = 0;
     int subType = 0;
     int status = 0;
+    prot_handle_t pHandle = -1;
 
     I_LOG("%s\n", (char*)msg+sizeof(void*));
     memcpy(&sock, msg, sizeof(void*));
@@ -251,11 +323,11 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     new_obj = json_tokener_parse_ex (tok, (const char*)msg+sizeof(void*), msg_len-sizeof(void*));
     if (NULL == new_obj) {
         E_LOG("json parse wrong, illicit msg\n");
-        return;
+        return BU_ERROR;
     }
 
     msg_type = json_object_get_int(json_object_object_get(new_obj, "TYPE"));
-
+    pHandle = json_object_get_int(json_object_object_get(new_obj, "DID"));
     switch ( msg_type )
     {
         case PROT_TYPE_REG :
@@ -269,6 +341,7 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
         case PROT_TYPE_FILE_ADD :
             break;
         case PROT_TYPE_FILE_LIST :
+            file_list_msg_proc(sock, new_obj, pHandle);
             break;
         case PROT_TYPE_FILE_DELETE :
             break;
@@ -286,6 +359,29 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     json_object_put(new_obj);
     json_object_put(my_object);
 
+    return BU_OK;
+}
+
+void prot_msg_cb(void* msg, BU_UINT32 msg_len, task_id src_id)
+{
+    switch ( src_id )
+    {
+        case PROT_NET_TASK_ID:
+            net_msg_proc(msg, msg_len);
+            break;
+        case MEDIA_TASK_ID :
+            media_msg_proc(msg, msg_len);
+            break;
+        case CONTRL_TASK_ID :
+            break;
+        case TIMER_TASK_ID :
+            break;
+        case PROT_TASK_ID :
+            break;
+        default:
+            E_LOG("wrong task id\n");
+            break;
+    }
     return ;
 }
 

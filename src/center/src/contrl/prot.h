@@ -14,7 +14,7 @@ extern "C"
 #include "com_pkg_struct.h"
 
 /******* macro definition ******/
-#define MAX_SESSION_NUM 10
+//#define MAX_SESSION_NUM 10
 /******* data structure ******/
 typedef struct tag_prot_session_info{
     media_handle_t mhandle;
@@ -28,7 +28,10 @@ typedef struct tag_prot_session_info{
 /******* fuction ******/
 void* prot_main(void* p);
     
-void prot_msg_cb(void* msg, BU_UINT32 msg_len);
+void prot_msg_cb(void* msg, BU_UINT32 msg_len, task_id src_id);
+
+BU_INT8 check_prot_handle(prot_handle_t pHandle);
+
 
 extern msg_callback_node_t g_msg_prot; 
 

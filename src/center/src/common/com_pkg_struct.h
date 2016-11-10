@@ -31,9 +31,9 @@ enum enum_pkg_prot_media_type{
 #pragma pack(push,1)
 
 typedef struct tag_pkt_mhead {
-    uint8_t prot_handle;
-    uint8_t media_handle;
-    uint8_t type;
+    uint32_t prot_handle;
+    uint32_t media_handle;
+    uint16_t type;
 }pkt_mhead_t;
 
 

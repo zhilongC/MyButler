@@ -51,7 +51,7 @@ int check_task_id(task_id id)
     }
 }
 
-void msg_list_push(char* pMsgInfo, int nMsgInfoSize, task_id dst_id)
+void msg_list_push(char* pMsgInfo, int nMsgInfoSize, task_id dst_id, task_id src_id)
 {
     BU_UINT32 i = 0;
     
@@ -79,7 +79,8 @@ void msg_list_push(char* pMsgInfo, int nMsgInfoSize, task_id dst_id)
     }   
     memcpy(pMsg->pMsgInfo, pMsgInfo, nMsgInfoSize);
     pMsg->nMsgInfoSize = nMsgInfoSize;
-
+    pMsg->srcID = src_id;
+    
     pthread_mutex_lock(&((s_task_info[dst_id].queue_head)->mtx));
     list_add_tail(&(pMsg->list), &((s_task_info[dst_id].queue_head)->list));
     pthread_mutex_unlock(&((s_task_info[dst_id].queue_head)->mtx));
@@ -110,7 +111,7 @@ void msg_list_handle(msg_callback_node_p head, msg_callback_pfun_t pfun)
 
     pNode = list_entry(pTemp, msg_callback_node_t, list);
 
-    (*pfun)(pNode->pMsgInfo, pNode->nMsgInfoSize);
+    (*pfun)(pNode->pMsgInfo, pNode->nMsgInfoSize, pNode->srcID);
 
     BU_Free(pNode->pMsgInfo);
     BU_Free(pNode);

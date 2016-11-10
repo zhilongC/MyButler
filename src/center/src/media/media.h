@@ -10,7 +10,7 @@ extern "C"
 #include "media_common.h"
 #include "prot_common.h"
 #include "com_pkg_struct.h"
-
+#include "file_manage.h"
 
 /******* macro definition ******/
 /******* data structure ******/
@@ -20,7 +20,7 @@ typedef struct tag_media_session_info{
 
 /******* fuction ******/
 void* media_main(void* p);
-void media_msg_cb(void* msg, BU_UINT32 msg_len);
+void media_msg_cb(void* msg, BU_UINT32 msg_len, task_id src_id);
 
 #ifdef __cplusplus
 }

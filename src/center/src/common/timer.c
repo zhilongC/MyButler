@@ -83,7 +83,7 @@ BU_UINT32 Timer_stop(BU_UINT32 ulHandle)
 
 BU_UINT32 Timer_handle(BU_UINT32 ulHandle)
 {
-    msg_list_push("timer handle", strlen("timer handle"), s_pstTimerInfo[ulHandle].ulRecvTaskID); 
+    msg_list_push("timer handle", strlen("timer handle"), s_pstTimerInfo[ulHandle].ulRecvTaskID, TIMER_TASK_ID); 
     return BU_OK;    
 }
 

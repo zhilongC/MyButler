@@ -18,7 +18,7 @@ extern "C"
 /******* fuction ******/
 void* contrl_main(void* p);
     
-void contrl_msg_cb(void* msg, BU_UINT32 msg_len);
+void contrl_msg_cb(void* msg, BU_UINT32 msg_len, task_id src_id);
 
 #ifdef __cplusplus
 }
