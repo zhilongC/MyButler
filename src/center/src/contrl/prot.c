@@ -34,7 +34,6 @@ void handle(int sig)
         QUIT = true;
 }
 
-// 有数据可读，将调用此函数
 static void readCallback(Socket *sp)
 {
     int n;
@@ -44,6 +43,8 @@ static void readCallback(Socket *sp)
     static int buf_len = 1024;
 
     n = readSocket(sp, &len, 4);
+
+    len = ntohl(len);
     
     if (n <= 0)
     {
@@ -94,7 +95,6 @@ static void readCallback(Socket *sp)
     msg_list_push(buf, buf_len, PROT_TASK_ID); 
 }
 
-// 当有新的客户连接时，将调用此函数
 static void callbackAccept(Socket *sp)
 {
     Socket *sp_c = acceptSocket(sp, readCallback);
@@ -152,27 +152,49 @@ void* prot_main(void* p)
 
     signal(SIGINT, handle);
     
-    // 初始化libsocket
     libSocketInit();
     
-    printf("Tcp Server Test\n");
-    // 创建流式套接字
     Socket *sp = createSocket(SOCK_STREAM, 0, callbackAccept);
     if (sp == NULL)
         return NULL;
     
-    // 绑定本地端口，并监听
     listenSocket(sp, 8888);
-    printf("listen on %d\n");
     while(1)
     {
         msg_list_handle(&g_msg_prot, prot_msg_cb);
-        //msg_list_push("self test", strlen("self test"), PROT_TASK_ID); 
         sleep(5);
     }
     libSocketDeinit();
 
     return NULL;
+}
+
+BU_INT8 send_json_str(void* sock, const char* sendbuf, int buf_len)
+{
+    char* buf = NULL;
+    BU_UINT32 ulLen = 0; 
+    
+    if(buf_len == 0 || sendbuf == NULL){
+        E_LOG("input error\n");
+        return BU_ERROR;
+    }
+
+    buf = (char*)calloc(1, buf_len+4);
+    if(NULL == buf){
+        E_LOG("calloc error\n");
+        return BU_ERROR;        
+    }
+
+    ulLen = htonl(buf_len);
+    memcpy(buf, &ulLen, 4);
+    memcpy(buf+4, sendbuf, buf_len);
+    
+    writeSocket((Socket*)sock, (void*)buf, buf_len+4, 0);
+
+    free(buf);
+    buf = NULL;
+    
+    return BU_OK;
 }
 
 void load_msg_proc(void* sock, json_object* msg_obj)
@@ -200,8 +222,7 @@ void load_msg_proc(void* sock, json_object* msg_obj)
 
     tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
     if(tempSend != NULL && strcmp(tempSend, "null") != 0){
-    
-        writeSocket((Socket*)sock, (void*)tempSend, strlen(tempSend), 0);
+        send_json_str(sock, tempSend, strlen(tempSend));
     }
 
     return;
@@ -223,7 +244,7 @@ void prot_msg_cb(void* msg, BU_UINT32 msg_len)
     int subType = 0;
     int status = 0;
 
-    I_LOG("%s\n", (char*)msg);
+    I_LOG("%s\n", (char*)msg+sizeof(void*));
     memcpy(&sock, msg, sizeof(void*));
 
     tok = json_tokener_new ();

@@ -12,6 +12,7 @@
 #define TCP_C_TEST 	1
 #define TCP_S_TEST 	2
 
+#define JSON_SEND "{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}" 
 // 修改下面的数字，选择你要测试的项目。
 #define TEST 		1
 
@@ -45,7 +46,7 @@ static void readCallback(Socket *sp)
 	else if (TEST == TCP_C_TEST)
 	{
 		printf("read from %s:%d\n", inet_ntoa(sp->dAddr.sin_addr), ntohs(sp->dAddr.sin_port));
-		writeSocket(sp, buf, strlen(buf) + 1, 0);
+		//writeSocket(sp, buf, strlen(buf) + 1, 0);
 	}
 	else if (TEST == TCP_S_TEST)
 	{
@@ -121,12 +122,13 @@ int main(int argc, char **argv)
 		return -1;
     sleep(1);
     char buftmp[1024] = {0};
-    int len = 5;
+    int len = strlen(JSON_SEND);
+    len = htonl(len);
     memcpy(buftmp, &len, 4);
-    memcpy(buftmp+4, "{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}", strlen("{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}"));
+    memcpy(buftmp+4, JSON_SEND, strlen(JSON_SEND));
     //memcpy(buftmp+4, "hello", 5);
     printf("%s\n", buftmp+4);
-    writeSocket(sp, buftmp, strlen("{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}")+4, 0);
+    writeSocket(sp, buftmp, strlen(JSON_SEND)+4, 0);
 #elif TEST == TCP_S_TEST
 // TCP Server Test
 	
