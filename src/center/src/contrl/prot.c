@@ -258,17 +258,92 @@ BU_INT8 file_list_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHand
     /* ****************pkg prot PKG_PROT_MEDIA_FLIST************** 
         +4B: pathLen
         +NB: path string with length pathLen
-    ************************************************************* */
+        
+    	*********************************************************** */
     PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ pathLen + 4);
-    PKG_STRING_MSG(sendBuf, offset, &mhead, sizeof(pkt_mhead_t));
+    PKG_BYTES_MSG(sendBuf, offset, &mhead, sizeof(pkt_mhead_t));
     PKG_UINT32_MSG(sendBuf,offset, pathLen);
-    PKG_STRING_MSG(sendBuf, offset, path, pathLen);
+    PKG_BYTES_MSG(sendBuf, offset, path, pathLen);
     
     msg_list_push(sendBuf, offset, MEDIA_TASK_ID, PROT_TASK_ID); 
     //msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), CONTRL_TASK_ID); 
-    
+    PKG_FREE_BUFF(sendBuf);
     return BU_OK;
 }
+
+static BU_INT8 flist_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
+{
+	BU_UINT32 ulOffSet = 0;
+	BU_UINT32 ulFileNum = 0;
+	BU_UINT32 i = 0;
+	BU_UINT32 ulNameLen = 0;
+	BU_UINT32 ulType = 0;
+	BU_UINT32 ulSize = 0;
+	BU_UINT64 ulTime = 0;
+	prot_session_info_t* pInfo = NULL;
+	const char* pBuf = (const char*)msg;
+
+	char* name = NULL;
+	json_object *my_object = json_object_new_object ();	
+    json_object *my_array  = json_object_new_array ();	
+    json_object *my_obj_tmp = NULL;
+	prot_handle_t tmp_handle = -1;
+	int code = BU_OK;
+	const char* tempSend = NULL;
+	
+    /* ****************pkg prot PKG_PROT_MEDIA_FLIST_ACK************** 
+        +4B: num
+        ---array 1st
+        +2B: nameLen
+        +NB: name
+        +1B: file type
+        +4B: size
+        +8B: time
+        ---
+        +NB: path string with length pathLen
+        
+    	*********************************************************** */
+	
+	json_object_object_add (my_object, "DID", json_object_new_int (phandle));
+	json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_FILE_LIST));
+	json_object_object_add (my_object, "CODE", json_object_new_int (code));
+	
+	UNPKG_UINT32_MSG(pBuf, ulOffSet, ulFileNum);
+	json_object_object_add (my_object, "NUM", json_object_new_int (ulFileNum));
+
+	for(i=0; i<ulFileNum; i++){
+		my_obj_tmp = json_object_new_object ();
+
+		UNPKG_UINT16_MSG(pBuf, ulOffSet, ulNameLen);
+		if((name = (char*)calloc(1, ulNameLen+1)) == NULL){
+			E_LOG("calloc error\n");
+			return BU_ERROR;
+		}
+		UNPKG_BYTES_MSG(pBuf, ulOffSet, ulNameLen, name);
+		json_object_object_add (my_obj_tmp, "NAME", json_object_new_string(name));
+		free(name);
+		name = NULL;
+		
+		UNPKG_UINT8_MSG(pBuf, ulOffSet, ulType);
+		json_object_object_add (my_obj_tmp, "FILE_TYPE", json_object_new_int(ulType));
+		UNPKG_UINT32_MSG(pBuf, ulOffSet, ulSize);
+		json_object_object_add (my_obj_tmp, "FILE_SIZE", json_object_new_int(ulSize));
+		UNPKG_UINT64_MSG(pBuf, ulOffSet, ulTime);
+		json_object_object_add (my_obj_tmp, "FILE_MOD_TIME", json_object_new_int(ulTime));
+
+		json_object_array_add (my_array, my_obj_tmp);
+	}
+	json_object_object_add (my_object, "DATA", my_array);
+
+	tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+	if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+		pInfo = find_session_info(phandle);
+		send_json_str(pInfo->sock, tempSend, strlen(tempSend));
+	}
+
+	return BU_OK;
+}
+
 
 static BU_INT8 media_msg_proc(void* msg, BU_UINT32 msg_len)
 {
@@ -284,13 +359,14 @@ static BU_INT8 media_msg_proc(void* msg, BU_UINT32 msg_len)
 
     switch ( mhead.type )
     {
-        case PKG_PROT_MEDIA_LOAD :
+        case PKG_PROT_MEDIA_LOAD_ACK :
             psInfo = find_session_info(mhead.prot_handle);
             if(NULL != psInfo){
                 psInfo->mhandle = mhead.media_handle;
             }
             break;
-        case PKG_PROT_MEDIA_FLIST :
+        case PKG_PROT_MEDIA_FLIST_ACK :
+			flist_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
             break;
         default:
             E_LOG("wrong media msg type\n");

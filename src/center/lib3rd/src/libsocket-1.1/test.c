@@ -13,6 +13,7 @@
 #define TCP_S_TEST 	2
 
 #define JSON_SEND "{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}" 
+#define JSON_SEND_LIST "{\"DID\":0, \"TYPE\":5, \"FILE_PATH\":\"/home/caozhilong\"}" 
 // 修改下面的数字，选择你要测试的项目。
 #define TEST 		1
 
@@ -44,10 +45,18 @@ static void readCallback(Socket *sp)
 		//writeSocket(sp, buf, strlen(buf) + 1, W_DST);	// 向指定的目标地址发送数据(用于UDP)
 	}
 	else if (TEST == TCP_C_TEST)
-	{
-		printf("read from %s:%d\n", inet_ntoa(sp->dAddr.sin_addr), ntohs(sp->dAddr.sin_port));
-		//writeSocket(sp, buf, strlen(buf) + 1, 0);
-	}
+    {
+        printf("read from %s:%d\n", inet_ntoa(sp->dAddr.sin_addr), ntohs(sp->dAddr.sin_port));
+
+        char buftmp[1024] = {0};
+        int len = strlen(JSON_SEND_LIST);
+        len = htonl(len);
+        memcpy(buftmp, &len, 4);
+        memcpy(buftmp+4, JSON_SEND_LIST, strlen(JSON_SEND_LIST));
+        //memcpy(buftmp+4, "hello", 5);
+        printf("%s\n", buftmp+4);
+        writeSocket(sp, buftmp, strlen(JSON_SEND_LIST)+4, 0);
+    }
 	else if (TEST == TCP_S_TEST)
 	{
 		printf("read from %s:%d\n", inet_ntoa(sp->pAddr.sin_addr), ntohs(sp->pAddr.sin_port));

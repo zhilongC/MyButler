@@ -18,14 +18,20 @@ typedef enum enum_msg_type{
 
 /* PROT&MEDIA */
 enum enum_pkg_prot_media_type{
-    PKG_PROT_MEDIA_LOAD         = 0x01,
-    PKG_PROT_MEDIA_FADD         = 0x02,
-    PKG_PROT_MEDIA_FLIST        = 0x03,
-    PKG_PROT_MEDIA_FDEL         = 0x04,
-    PKG_PROT_MEDIA_FDOWN        = 0x05,
-    PKG_PROT_MEDIA_FCOPY        = 0x06,
-    PKG_PROT_MEDIA_FRENAME      = 0x07,
-
+    PKG_PROT_MEDIA_LOAD         = 0x001,	
+    PKG_PROT_MEDIA_LOAD_ACK     = 0x002,
+	PKG_PROT_MEDIA_FADD 		= 0x003,
+	PKG_PROT_MEDIA_FADD_ACK 	= 0x004,
+    PKG_PROT_MEDIA_FLIST        = 0x005,
+	PKG_PROT_MEDIA_FLIST_ACK	= 0x006,
+    PKG_PROT_MEDIA_FDEL         = 0x007,
+	PKG_PROT_MEDIA_FDEL_ACK 	= 0x008,
+    PKG_PROT_MEDIA_FDOWN        = 0x009,
+	PKG_PROT_MEDIA_FDOWN_ACK	= 0x00a,
+    PKG_PROT_MEDIA_FCOPY        = 0x00b,
+	PKG_PROT_MEDIA_FCOPY_ACK	= 0x00c,
+    PKG_PROT_MEDIA_FRENAME      = 0x00d,
+    PKG_PROT_MEDIA_FRENAME_ACK  = 0x00e,
 };
 
 #pragma pack(push,1)

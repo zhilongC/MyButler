@@ -9,6 +9,13 @@ extern "C"
 #include "task.h"
 
 /******* macro definition ******/
+/*解8位的网络数据到本地结构*/
+#define UNPKG_UINT8_MSG(pBuf, ulOffSet, hostV)\
+{\
+    hostV = pBuf[ulOffSet];\
+    ulOffSet++; \
+}
+
 /*解16位的网络数据到本地结构*/
 #define UNPKG_UINT16_MSG(pBuf, ulOffSet, hostV)\
 {\
@@ -20,9 +27,17 @@ extern "C"
 {\
     (hostV) = ntohl(*(BU_UINT32 *) (pBuf + ulOffSet));\
     ulOffSet += 4;\
-}  
+}
+
+/*解64位的网络数据到本地结构*/
+#define UNPKG_UINT64_MSG(pBuf, ulOffSet, hostV)\
+{\
+    (hostV) = *(BU_UINT64 *) (pBuf + ulOffSet);\
+    ulOffSet += 8;\
+}
+
 /*解网络字符串到本地结构 */
-#define UNPKG_SRING_MSG(pBuf, ulOffSet, ulLen, pDst)\
+#define UNPKG_BYTES_MSG(pBuf, ulOffSet, ulLen, pDst)\
 {\
     memcpy(pDst, pBuf + ulOffSet, ulLen);\
     ulOffSet += ulLen;\
@@ -52,9 +67,24 @@ extern "C"
     hostV = htons(hostV);\
     memcpy(pBuf + ulOffSet, &hostV, 2);\
     ulOffSet += 2;\
+	hostV = ntohs(hostV);\
 }
+/*将8位整型数据拼到消息体*/
+#define PKG_UINT8_MSG(pBuf, ulOffSet, hostV)\
+{\
+    pBuf[ulOffSet] = hostV;\
+    ulOffSet++;\
+}
+
+/*将64位整型数据拼到消息体*/
+#define PKG_UINT64_MSG(pBuf, ulOffSet, hostV)\
+{\
+    memcpy(pBuf + ulOffSet, &hostV, 8);\
+    ulOffSet += 8;\
+}
+
 /*将字符数据拼到消息体*/
-#define PKG_STRING_MSG(pBuf, ulOffSet, pSrc, len)\
+#define PKG_BYTES_MSG(pBuf, ulOffSet, pSrc, len)\
 {\
     memcpy(pBuf + ulOffSet, pSrc, len);\
     ulOffSet += len;\
