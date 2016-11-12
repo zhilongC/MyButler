@@ -13,7 +13,7 @@
 #define TCP_S_TEST 	2
 
 #define JSON_SEND "{\"TYPE\":2, \"VER\":1, \"ACCOUNT\":\"HELLO\", \"PWD\":\"12345\"}" 
-#define JSON_SEND_LIST "{\"DID\":0, \"TYPE\":5, \"FILE_PATH\":\"/home/caozhilong\"}" 
+#define JSON_SEND_LIST "{\"DID\":0, \"TYPE\":5, \"FILE_PATH\":\"/tmp\"}" 
 // 修改下面的数字，选择你要测试的项目。
 #define TEST 		1
 
@@ -48,6 +48,7 @@ static void readCallback(Socket *sp)
     {
         printf("read from %s:%d\n", inet_ntoa(sp->dAddr.sin_addr), ntohs(sp->dAddr.sin_port));
 
+        printf("%s\n", buf+4);
         char buftmp[1024] = {0};
         int len = strlen(JSON_SEND_LIST);
         len = htonl(len);

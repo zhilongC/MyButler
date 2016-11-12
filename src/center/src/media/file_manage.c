@@ -13,6 +13,10 @@ BU_UINT32 file_num(const char* path)
     }
 
     while ((dirp = readdir(dp)) != NULL) {
+        if ((strcmp (dirp->d_name, ".") == 0 || strcmp (dirp->d_name, "..") == 0)){
+
+			continue;
+    	}
 
         count++;
     }
@@ -57,9 +61,12 @@ BU_UINT8 file_get_list(const char* path, file_info_t* info_arr, BU_UINT32 arrNum
 
     while ((dirp = readdir(dp)) != NULL) {
         /*ignore hidden file*/
-        if ((strcmp (dirp->d_name, ".") == 0 || strcmp (dirp->d_name, "..") == 0))
-            continue;
+        if ((strcmp (dirp->d_name, ".") == 0 || strcmp (dirp->d_name, "..") == 0)){
 
+			continue;
+    	}
+		
+        bzero(filePath, sizeof (filePath));
         sprintf (filePath, "%s/%s", path, dirp->d_name);
         
         /* get file profile */
@@ -78,7 +85,6 @@ BU_UINT8 file_get_list(const char* path, file_info_t* info_arr, BU_UINT32 arrNum
             info_arr[i].size = 0;
         }
 
-        bzero(filePath, sizeof (filePath));
         if (lstat (filePath, &statbuf) != 0) {
         
             E_LOG("lstat2 file error: %s\n", strerror (errno));
