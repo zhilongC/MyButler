@@ -236,6 +236,45 @@ BU_INT8 load_msg_proc(void* sock, json_object* msg_obj)
     return BU_OK;
 }
 
+BU_INT8 file_del_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
+{
+    char* sendBuf = NULL;
+    const char* path = NULL;
+    int pathLen = 0;
+    int offset = 0;
+    pkt_mhead_t mhead;
+    prot_session_info_t* psInfo = NULL;
+
+    if((psInfo = find_session_info(pHandle)) == NULL){
+
+		E_LOG("no find session \n");
+		return BU_ERROR;
+	}
+    mhead.prot_handle = pHandle;
+    mhead.media_handle = psInfo->mhandle;
+    mhead.type = PKG_PROT_MEDIA_FDEL;
+
+    if((path = json_object_get_string(json_object_object_get(msg_obj, "FILE_PATH"))) == NULL){
+        E_LOG("FILE_PATH is empty\n");
+        return BU_ERROR;
+    }
+    pathLen = strlen(path);
+    /* ****************pkg prot PKG_PROT_MEDIA_FLIST************** 
+        +4B: pathLen
+        +NB: path string with length pathLen
+        
+    	*********************************************************** */
+    PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ pathLen + 4);
+    PKG_BYTES_MSG(sendBuf, offset, &mhead, sizeof(pkt_mhead_t));
+    PKG_UINT32_MSG(sendBuf,offset, pathLen);
+    PKG_BYTES_MSG(sendBuf, offset, path, pathLen);
+    
+    msg_list_push(sendBuf, offset, MEDIA_TASK_ID, PROT_TASK_ID); 
+    PKG_FREE_BUFF(sendBuf);
+
+	return BU_OK;
+}
+
 BU_INT8 file_list_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
 { 
     char* sendBuf = NULL;
