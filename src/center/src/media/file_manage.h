@@ -31,6 +31,12 @@ typedef struct tag_file_info{
 /******* fuction ******/
 BU_UINT32 file_num(const char* path);
 BU_UINT8 file_get_list(const char* path, file_info_t* info_arr, BU_UINT32 arrNum);
+BU_UINT32 file_delete(const char* path);
+BU_UINT32 file_new_file(const char* path);
+BU_UINT32 file_new_dir(const char* path);
+BU_UINT32 file_copy(const char* src_path, const char* dst_path);
+BU_UINT32 file_rename(const char* src_path, const char* dst_path);
+
 
 #ifdef __cplusplus
 }

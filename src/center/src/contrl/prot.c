@@ -236,6 +236,196 @@ BU_INT8 load_msg_proc(void* sock, json_object* msg_obj)
     return BU_OK;
 }
 
+BU_INT8 file_download_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
+{
+	char* sendBuf = NULL;
+	BU_UINT32 file_type = 0;
+	BU_UINT32 ulOffSet = 0;
+	BU_UINT32 file_name_len = 0;
+	const char* file_name = NULL;
+	prot_session_info_t* psInfo = NULL;
+	pkt_mhead_t mhead;
+
+	if((psInfo = find_session_info(pHandle)) == NULL){
+
+		E_LOG("no find session \n");
+		return BU_ERROR;
+	}
+
+	file_type = json_object_get_int(json_object_object_get(msg_obj, "FTYPE"));
+	file_name = json_object_get_string(json_object_object_get(msg_obj, "FILE_NAME"));
+
+	
+	mhead.prot_handle = pHandle;
+	mhead.media_handle = psInfo->mhandle;
+	mhead.type = PKG_PROT_MEDIA_FDOWN;
+
+	file_name_len = strlen(file_name);
+	
+	/* ****************pkg prot PKG_PROT_MEDIA_FDOWN************** 
+		+4B: file type
+		+4B: file name length
+		+NB: file name
+		
+	*********************************************************** */
+	PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ 4 + 4 + file_name_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, &mhead, sizeof(pkt_mhead_t));
+	PKG_UINT32_MSG(sendBuf,ulOffSet, file_type);
+	PKG_UINT32_MSG(sendBuf,ulOffSet, file_name_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, file_name, file_name_len);	 	 
+	msg_list_push(sendBuf, ulOffSet, MEDIA_TASK_ID, PROT_TASK_ID); 
+	PKG_FREE_BUFF(sendBuf);
+
+	return BU_OK;
+}
+
+
+BU_INT8 file_copy_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
+{
+	char* sendBuf = NULL;
+
+	BU_UINT32 file_type = 0;
+	BU_UINT32 ulOffSet = 0;
+	BU_UINT32 file_src_len = 0;
+	BU_UINT32 file_dst_len = 0;
+	const char* file_src = NULL;
+	const char* file_dst = NULL;
+	prot_session_info_t* psInfo = NULL;
+	pkt_mhead_t mhead;
+
+	if((psInfo = find_session_info(pHandle)) == NULL){
+
+		E_LOG("no find session \n");
+		return BU_ERROR;
+	}
+
+	file_type = json_object_get_int(json_object_object_get(msg_obj, "FTYPE"));
+	file_src = json_object_get_string(json_object_object_get(msg_obj, "FILE_SRC"));
+	file_dst = json_object_get_string(json_object_object_get(msg_obj, "FILE_DST"));
+
+	
+	mhead.prot_handle = pHandle;
+	mhead.media_handle = psInfo->mhandle;
+	mhead.type = PKG_PROT_MEDIA_FCOPY;
+
+	file_src_len = strlen(file_src);
+	file_dst_len = strlen(file_dst);
+
+	
+	/* ****************pkg prot PKG_PROT_MEDIA_FCOPY************** 
+		+4B: file type
+		+4B: file src length
+		+NB: file src
+		+4B: file dst length
+		+NB: file dst		
+	*********************************************************** */
+	PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ 4 + 4 + file_src_len + 4 + file_dst_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, &mhead, sizeof(pkt_mhead_t));
+	PKG_UINT32_MSG(sendBuf,ulOffSet, file_src_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, file_src, file_src_len);	 
+	PKG_UINT32_MSG(sendBuf,ulOffSet, file_dst_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, file_dst, file_dst_len);	 
+	msg_list_push(sendBuf, ulOffSet, MEDIA_TASK_ID, PROT_TASK_ID); 
+	PKG_FREE_BUFF(sendBuf);
+
+	return BU_OK;
+}
+
+BU_INT8 file_rename_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
+{
+	char* sendBuf = NULL;
+
+	BU_UINT32 file_type = 0;
+	BU_UINT32 ulOffSet = 0;
+	BU_UINT32 file_src_len = 0;
+	BU_UINT32 file_dst_len = 0;
+	const char* file_src = NULL;
+	const char* file_dst = NULL;
+	prot_session_info_t* psInfo = NULL;
+	pkt_mhead_t mhead;
+
+	if((psInfo = find_session_info(pHandle)) == NULL){
+
+		E_LOG("no find session \n");
+		return BU_ERROR;
+	}
+
+	file_type = json_object_get_int(json_object_object_get(msg_obj, "FTYPE"));
+	file_src = json_object_get_string(json_object_object_get(msg_obj, "FILE_SRC"));
+	file_dst = json_object_get_string(json_object_object_get(msg_obj, "FILE_DST"));
+
+	
+	mhead.prot_handle = pHandle;
+	mhead.media_handle = psInfo->mhandle;
+	mhead.type = PKG_PROT_MEDIA_FRENAME;
+
+	file_src_len = strlen(file_src);
+	file_dst_len = strlen(file_dst);
+
+	
+	/* ****************pkg prot PKG_PROT_MEDIA_FRENAME************** 
+			+4B: file type
+			+4B: file src length
+			+NB: file src
+			+4B: file dst length
+			+NB: file dst		
+	*********************************************************** */
+
+	PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ 4 + 4 + file_src_len + 4 + file_dst_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, &mhead, sizeof(pkt_mhead_t));
+	PKG_UINT32_MSG(sendBuf,ulOffSet, file_src_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, file_src, file_src_len);    
+	PKG_UINT32_MSG(sendBuf,ulOffSet, file_dst_len);
+	PKG_BYTES_MSG(sendBuf, ulOffSet, file_dst, file_dst_len);    
+	msg_list_push(sendBuf, ulOffSet, MEDIA_TASK_ID, PROT_TASK_ID); 
+	PKG_FREE_BUFF(sendBuf);
+
+	return BU_OK;
+}
+
+
+BU_INT8 file_new_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
+{
+	char* sendBuf = NULL;
+
+	BU_UINT32 file_type = 0;
+	BU_UINT32 ulOffSet = 0;
+	BU_UINT32 file_name_len = 0;
+	const char* file_name = NULL;
+    prot_session_info_t* psInfo = NULL;
+    pkt_mhead_t mhead;
+
+    if((psInfo = find_session_info(pHandle)) == NULL){
+
+		E_LOG("no find session \n");
+		return BU_ERROR;
+	}
+
+	file_type = json_object_get_int(json_object_object_get(msg_obj, "FTYPE"));
+	file_name = json_object_get_string(json_object_object_get(msg_obj, "FNAME"));
+	
+    mhead.prot_handle = pHandle;
+    mhead.media_handle = psInfo->mhandle;
+    mhead.type = PKG_PROT_MEDIA_FDEL;
+
+	file_name_len = strlen(file_name);
+	
+	/* ****************pkg prot PKG_PROT_MEDIA_FNEW************** 
+		+4B: file type
+		+4B: file name length
+		+NB: file name
+		
+	*********************************************************** */
+    PKG_INIT_BUFF(sendBuf, sizeof(pkt_mhead_t)+ 4 + 4 + file_name_len);
+    PKG_BYTES_MSG(sendBuf, ulOffSet, &mhead, sizeof(pkt_mhead_t));
+    PKG_UINT32_MSG(sendBuf,ulOffSet, file_name_len);
+    PKG_BYTES_MSG(sendBuf, ulOffSet, file_name, file_name_len);    
+    msg_list_push(sendBuf, ulOffSet, MEDIA_TASK_ID, PROT_TASK_ID); 
+    PKG_FREE_BUFF(sendBuf);
+
+	return BU_OK;
+}
+
 BU_INT8 file_del_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHandle)
 {
     char* sendBuf = NULL;
@@ -308,6 +498,144 @@ BU_INT8 file_list_msg_proc(void* sock, json_object* msg_obj, prot_handle_t pHand
     //msg_list_push((char*)&mhead, sizeof(pkt_mhead_t), CONTRL_TASK_ID); 
     PKG_FREE_BUFF(sendBuf);
     return BU_OK;
+}
+
+static BU_INT8 fdown_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
+{
+	BU_UINT32 ulResult = BU_ERROR;
+	BU_UINT32 ulOffSet = 0;
+	json_object *my_object = json_object_new_object (); 
+	const char* tempSend = NULL;
+	const char* pBuf = (const char*)msg;
+	char* download_url = NULL;
+	prot_session_info_t* pInfo = NULL;
+
+	/* ****************pkg prot PKG_PROT_MEDIA_FDOWN_ACK************** 
+		+4B: result code 
+		
+	*********************************************************** */
+	UNPKG_UINT32_MSG(pBuf,ulOffSet,ulResult);
+
+	json_object_object_add (my_object, "DID", json_object_new_int (phandle));
+	json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_FILE_DOWNLOAD));
+	json_object_object_add (my_object, "CODE", json_object_new_int (ulResult));
+	json_object_object_add (my_object, "URL", json_object_new_string(download_url));
+
+	tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+	if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+		pInfo = find_session_info(phandle);
+		send_json_str(pInfo->sock, tempSend, strlen(tempSend));
+	}
+	return BU_OK;
+}
+
+static BU_INT8 fcopy_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
+{
+	BU_UINT32 ulResult = BU_ERROR;
+	BU_UINT32 ulOffSet = 0;
+	json_object *my_object = json_object_new_object (); 
+	const char* tempSend = NULL;
+	const char* pBuf = (const char*)msg;
+	prot_session_info_t* pInfo = NULL;
+
+	/* ****************pkg prot PKG_PROT_MEDIA_FDEL_ACK************** 
+		+4B: result code 
+		
+	*********************************************************** */
+	UNPKG_UINT32_MSG(pBuf,ulOffSet,ulResult);
+
+	json_object_object_add (my_object, "DID", json_object_new_int (phandle));
+	json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_FILE_COPY));
+	json_object_object_add (my_object, "CODE", json_object_new_int (ulResult));
+
+	tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+	if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+		pInfo = find_session_info(phandle);
+		send_json_str(pInfo->sock, tempSend, strlen(tempSend));
+	}
+	return BU_OK;
+}
+
+static BU_INT8 frename_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
+{
+	BU_UINT32 ulResult = BU_ERROR;
+	BU_UINT32 ulOffSet = 0;
+	json_object *my_object = json_object_new_object (); 
+	const char* tempSend = NULL;
+	const char* pBuf = (const char*)msg;
+	prot_session_info_t* pInfo = NULL;
+
+	/* ****************pkg prot PKG_PROT_MEDIA_FDEL_ACK************** 
+		+4B: result code 
+		
+	*********************************************************** */
+	UNPKG_UINT32_MSG(pBuf,ulOffSet,ulResult);
+
+	json_object_object_add (my_object, "DID", json_object_new_int (phandle));
+	json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_FILE_RENAME));
+	json_object_object_add (my_object, "CODE", json_object_new_int (ulResult));
+
+	tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+	if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+		pInfo = find_session_info(phandle);
+		send_json_str(pInfo->sock, tempSend, strlen(tempSend));
+	}
+	return BU_OK;
+}
+
+static BU_INT8 fnew_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
+{
+	BU_UINT32 ulResult = BU_ERROR;
+	BU_UINT32 ulOffSet = 0;
+	json_object *my_object = json_object_new_object (); 
+	const char* tempSend = NULL;
+	const char* pBuf = (const char*)msg;
+	prot_session_info_t* pInfo = NULL;
+
+	/* ****************pkg prot PKG_PROT_MEDIA_FDEL_ACK************** 
+		+4B: result code 
+		
+	*********************************************************** */
+	UNPKG_UINT32_MSG(pBuf,ulOffSet,ulResult);
+
+	json_object_object_add (my_object, "DID", json_object_new_int (phandle));
+	json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_FILE_NEW));
+	json_object_object_add (my_object, "CODE", json_object_new_int (ulResult));
+
+	tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+	if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+		pInfo = find_session_info(phandle);
+		send_json_str(pInfo->sock, tempSend, strlen(tempSend));
+	}
+	return BU_OK;
+}
+
+
+static BU_INT8 fdel_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
+{
+	BU_UINT32 ulResult = BU_ERROR;
+	BU_UINT32 ulOffSet = 0;
+	json_object *my_object = json_object_new_object ();	
+	const char* tempSend = NULL;
+	const char* pBuf = (const char*)msg;
+	prot_session_info_t* pInfo = NULL;
+
+	/* ****************pkg prot PKG_PROT_MEDIA_FDEL_ACK************** 
+		+4B: result code 
+		
+	*********************************************************** */
+	UNPKG_UINT32_MSG(pBuf,ulOffSet,ulResult);
+
+	json_object_object_add (my_object, "DID", json_object_new_int (phandle));
+	json_object_object_add (my_object, "TYPE", json_object_new_int (PROT_TYPE_FILE_DELETE));
+	json_object_object_add (my_object, "CODE", json_object_new_int (ulResult));
+
+	tempSend = json_object_to_json_string (my_object);// if my_object is null , then the function return string "null"
+	if(tempSend != NULL && strcmp(tempSend, "null") != 0){
+		pInfo = find_session_info(phandle);
+		send_json_str(pInfo->sock, tempSend, strlen(tempSend));
+	}
+	return BU_OK;
 }
 
 static BU_INT8 flist_media_msg_proc(media_handle_t mhandle, prot_handle_t phandle, void* msg, BU_UINT32 msg_len)
@@ -406,7 +734,24 @@ static BU_INT8 media_msg_proc(void* msg, BU_UINT32 msg_len)
             break;
         case PKG_PROT_MEDIA_FLIST_ACK :
 			flist_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
-            break;
+            break;	
+		
+		case PKG_PROT_MEDIA_FDEL_ACK :
+			fdel_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
+			break;
+		case PKG_PROT_MEDIA_FNEW_ACK :
+			fnew_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
+			break;
+		case PKG_PROT_MEDIA_FDOWN_ACK :
+			fdown_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
+			break;
+		case PKG_PROT_MEDIA_FCOPY_ACK :
+			fcopy_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
+			break;
+		case PKG_PROT_MEDIA_FRENAME_ACK :
+			frename_media_msg_proc(mhead.media_handle, mhead.prot_handle, msg + sizeof(pkt_mhead_t), msg_len - sizeof(pkt_mhead_t));
+			break;
+
         default:
             E_LOG("wrong media msg type\n");
             return BU_ERROR;
@@ -453,18 +798,23 @@ static BU_INT8 net_msg_proc(void* msg, BU_UINT32 msg_len)
             break;
         case PROT_TYPE_GET_CONFIG :
             break;
-        case PROT_TYPE_FILE_ADD :
+        case PROT_TYPE_FILE_NEW :
+            file_new_msg_proc(sock, new_obj, pHandle);
             break;
         case PROT_TYPE_FILE_LIST :
             file_list_msg_proc(sock, new_obj, pHandle);
             break;
         case PROT_TYPE_FILE_DELETE :
+			file_del_msg_proc(sock, new_obj, pHandle);
             break;
         case PROT_TYPE_FILE_DOWNLOAD :
+			file_download_msg_proc(sock, new_obj, pHandle);
             break;
         case PROT_TYPE_FILE_COPY :
+			file_copy_msg_proc(sock, new_obj, pHandle);
             break;
         case PROT_TYPE_FILE_RENAME :
+			file_rename_msg_proc(sock, new_obj, pHandle);
             break;
         default:
             E_LOG("wrong msg type\n");

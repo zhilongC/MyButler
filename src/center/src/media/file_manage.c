@@ -1,5 +1,34 @@
 #include "file_manage.h"
 
+BU_UINT32 file_sys_cmd (IN const char* pSrcBuf)
+{
+    BU_UINT32 ulRes = 0;
+
+    if (NULL == pSrcBuf) {
+        E_LOG("pSrcBuf NULL!");
+        return BU_ERROR;
+    }
+
+    ulRes = system (pSrcBuf);
+
+    if (ulRes == -1) {
+        E_LOG("system error!");
+        return BU_ERROR;
+    }
+    if (WIFEXITED (ulRes)) {
+        if (WEXITSTATUS (ulRes) == 0) {
+            return BU_OK;
+        } else {
+            E_LOG("system error!");
+            return BU_ERROR;
+        }
+    } else {
+        E_LOG("cp exit illegal![%d]\n", errno);
+        return BU_ERROR;
+    }
+}
+
+
 BU_UINT32 file_num(const char* path)
 {
     DIR *dp = NULL;
@@ -42,6 +71,72 @@ BU_UINT32 file_get_size (const char* path)
     fclose (fp);
     
     return length;
+}
+BU_UINT32 file_copy(const char* src_path, const char* dst_path)
+{
+	char format_cmd[1024] = {0};
+
+	if(src_path == NULL || dst_path == NULL || strlen(src_path)+strlen(dst_path)>1000){
+
+		E_LOG("wrong input\n");
+		return BU_ERROR;
+	}
+
+	sprintf(format_cmd, "cp -fr %s %s", src_path, dst_path);
+	I_LOG("format_cmd[%s]\n", format_cmd);
+
+	return file_sys_cmd(format_cmd);
+}
+BU_UINT32 file_rename(const char* src_path, const char* dst_path)
+{
+	char format_cmd[1024] = {0};
+
+	if(src_path == NULL || dst_path == NULL || strlen(src_path)+strlen(dst_path)>1000){
+
+		E_LOG("wrong input\n");
+		return BU_ERROR;
+	}
+
+	sprintf(format_cmd, "mv %s %s", src_path, dst_path);
+	I_LOG("format_cmd[%s]\n", format_cmd);
+
+	return file_sys_cmd(format_cmd);
+}
+
+
+BU_UINT32 file_new_file(const char* path)
+{
+	if(-1 == open(path, (O_CREAT|O_WRONLY|O_TRUNC), 0666)){
+
+		E_LOG("create new file error\n");
+		return BU_ERROR;
+	}
+	
+	return BU_OK;
+}
+
+BU_UINT32 file_new_dir(const char* path)
+{
+	if(-1 == mkdir(path, 0777)){
+
+		E_LOG("make dir error\n");
+		return BU_ERROR;
+	}
+	
+	return BU_OK;
+}
+
+BU_UINT32 file_delete(const char* path)
+{
+	I_LOG("remove file name [%s]\n", path);
+
+	if(remove(path) != 0){
+
+		E_LOG("remove error\n");
+		return BU_ERROR;
+	}
+	
+	return BU_OK;
 }
 
 BU_UINT8 file_get_list(const char* path, file_info_t* info_arr, BU_UINT32 arrNum)
