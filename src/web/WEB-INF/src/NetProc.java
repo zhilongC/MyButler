@@ -11,7 +11,7 @@ public class NetProc extends Thread{
     private OutputStream mOutSt;
     private InputStream mInSt;
     private MsgProcess mProc;
-
+    private static NetUtils mNetUtils;
     public void setMsgCallBack(MsgProcess proc){
        this.mProc = proc; 
     }
@@ -39,32 +39,18 @@ public class NetProc extends Thread{
            }catch(Exception e){
 
                 System.out.println("read error");
+                continue;
            }
            String msg = new String(recMsg);
 
            this.mProc.method(msg); 
         }
     }
-    //java 合并两个byte数组
-    public static byte[] byteMerger(byte[] byte_front, byte[] byte_back){
-        byte[] result = new byte[byte_front.length+byte_back.length];
-        System.arraycopy(byte_front, 0, result, 0, byte_front.length);
-        System.arraycopy(byte_back, 0, result, byte_front.length, byte_back.length);
-        return result;
-    }
-    public static byte[] int2byte(int v){
-        byte[] arr = new byte[4];
-        arr[0] = (byte)(v >>> 24 & 0xff);
-        arr[1] = (byte)(v >> 16 & 0xff);
-        arr[2] = (byte)(v >> 8 & 0xff);
-        arr[3] = (byte)(v & 0xff);
-        return arr;
-    }
     public void sendMsg(String msg){
         try{
-            byte[] strLen = int2byte(msg.getBytes().length);
+            byte[] strLen = mNetUtils.toBytes(msg.getBytes().length);
             byte[] strArr = msg.getBytes();
-            byte[] sendMsg = byteMerger(strLen, strArr);
+            byte[] sendMsg = mNetUtils.byteMerger(strLen, strArr);
             mOutSt.write(sendMsg);
         }catch (Exception e) {
             
