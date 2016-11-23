@@ -30,7 +30,7 @@ static media_handle_t create_media_session(prot_handle_t phandle)
 {
     int i = 0;
 
-    I_LOG("%d\n", phandle);
+    I_LOG("prot handle:[%d]\n", phandle);
     
     for(i=0; i<MAX_SESSION_NUM; i++){
         if(s_media_info[i].phandle == -1){

@@ -56,7 +56,7 @@ static void readCallback(Socket *sp)
     
     if (n <= 0)
     {
-        printf("The peer had shutdown\n");
+        E_LOG("The peer had shutdown\n");
         closeSocket(sp);
         return;
     }
@@ -220,7 +220,7 @@ BU_INT8 load_msg_proc(void* sock, json_object* msg_obj)
 
         notifi_load(tmp_handle);
     } else {
-    
+    	E_LOG("create session fail\n");
         code = BU_ERROR;
     }
     
