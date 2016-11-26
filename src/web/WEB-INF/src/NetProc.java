@@ -12,6 +12,9 @@ public class NetProc extends Thread{
     private InputStream mInSt;
     private MsgProcess mProc;
     private static NetUtils mNetUtils;
+    private static boolen isFirstPkg = true;
+    private static int mRecLength = 0;
+
     public void setMsgCallBack(MsgProcess proc){
        this.mProc = proc; 
     }
@@ -30,12 +33,22 @@ public class NetProc extends Thread{
     }
 
     public void run(){
+        int recLength = 0;
         while(true){
-           byte[] recMsg = new byte[1024]; 
+           byte[] recLen = new byte[4]; 
            try{
-           
-               mInSt.read(recMsg);
-                
+
+               if(isFirstPkg){
+                   mInSt.read(recLen);
+                   mRecLength = mNetUtils.toInt32(recLen); 
+               } else {
+                   
+                     
+                   mRecLength -= mInSt.read(mRecLength);
+               }
+               byte[] buf = new byte[recLength];
+
+
            }catch(Exception e){
 
                 System.out.println("read error");
