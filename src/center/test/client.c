@@ -14,7 +14,6 @@
 
 // 修改下面的数字，选择你要测试的项目。
 #define TEST 		TCP_C_TEST
-
 bool QUIT = false;
 void handle(int sig)
 {
@@ -22,7 +21,6 @@ void handle(int sig)
 		QUIT = true;
 }
 
-// 有数据可读，将调用此函数
 static void readCallback(Socket *sp)
 {
 	int n;
@@ -56,7 +54,6 @@ static void readCallback(Socket *sp)
 }
 
 #if TEST == TCP_S_TEST
-// 当有新的客户连接时，将调用此函数
 static void callbackAccept(Socket *sp)
 {
 	Socket *sp_c = acceptSocket(sp, readCallback);

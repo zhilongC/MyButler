@@ -1,6 +1,6 @@
 class MsgP implements MsgProcess{
     public void method(String json){
-//        System.out.println(json);
+        System.out.println(json);
         System.out.println("comme here");
     }
     
